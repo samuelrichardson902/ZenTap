@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">ZenTap</string>
+    <string name="accessibility_service_description">This service blocks access to selected apps to help reduce screen time and app addiction.</string>
+    <string name="app_blocked_title">App Blocked</string>
+    <string name="app_blocked_message">%1$s is currently blocked. Take a break and focus on what matters most.</string>
 </resources>
