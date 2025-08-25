@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:gravity="center"
     android:padding="32dp"
@@ -11,7 +12,7 @@
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:src="@drawable/ic_block"
-        android:tint="#ff4444"
+        app:tint="#ff4444"
         android:layout_marginBottom="32dp"
         android:contentDescription="Block icon" />
 
@@ -36,15 +37,26 @@
         android:layout_marginBottom="32dp"
         android:lineSpacingMultiplier="1.3" />
 
-    <Button
-        android:id="@+id/closeButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Close"
-        android:textSize="16sp"
-        android:paddingHorizontal="32dp"
-        android:paddingVertical="12dp"
-        android:background="@drawable/button_background"
-        android:textColor="@android:color/white" />
-
+    <Row>
+        <Button
+            android:id="@+id/closeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Close"
+            android:textSize="16sp"
+            android:paddingHorizontal="32dp"
+            android:paddingVertical="12dp"
+            android:background="@drawable/button_background"
+            android:textColor="@android:color/white" />
+        <Button
+            android:id="@+id/openButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Close"
+            android:textSize="16sp"
+            android:paddingHorizontal="32dp"
+            android:paddingVertical="12dp"
+            android:background="@drawable/button_background"
+            android:textColor="@android:color/white" />
+    </Row>
 </LinearLayout>
