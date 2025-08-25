@@ -3,41 +3,41 @@ package com.example.zentap
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.viewModels
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.core.content.edit
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.example.zentap.ui.screens.home.AppUiModel
 import com.example.zentap.ui.screens.home.MainScreen
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
-    private val _apps = MutableStateFlow<List<AppInfo>>(emptyList())
-    private val apps = _apps.asStateFlow()
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val appState by apps.collectAsState()
+            val appState by viewModel.apps.collectAsState()
+            var showDialog by remember { mutableStateOf(false) }
+
             val appUiModels = appState.map { appInfo ->
                 AppUiModel(
                     name = appInfo.name,
                     packageName = appInfo.packageName,
-                    icon = rememberDrawablePainter(drawable = appInfo.icon),
+                    icon = appInfo.icon,
                     blocked = appInfo.isBlocked
                 )
             }
@@ -45,90 +45,45 @@ class MainActivity : AppCompatActivity() {
             MainScreen(
                 apps = appUiModels,
                 onToggleBlock = { appUiModel, isBlocked ->
-                    val appInfo = apps.value.find { it.packageName == appUiModel.packageName }
+                    val appInfo = appState.find { it.packageName == appUiModel.packageName }
                     appInfo?.let {
-                        toggleAppBlocking(it, isBlocked)
+                        if (isBlocked && !isAccessibilityServiceEnabled()) {
+                            showDialog = true
+                        } else {
+                            viewModel.toggleAppBlocking(it, isBlocked, this)
+                            val message = if (isBlocked) "${it.name} is now blocked" else "${it.name} blocking disabled"
+                            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             )
+
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Accessibility Permission Required") },
+                    text = { Text("To block apps, this app needs accessibility permission. Please enable it in the settings.") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            openAccessibilitySettings()
+                            showDialog = false
+                        }) {
+                            Text("Go to Settings")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        loadAndSortApps()
-    }
-
-    private fun loadAndSortApps() {
-        val loadedApps = getInstalledApps()
-
-        loadedApps.sortWith(compareBy<AppInfo> {
-            if (it.isBlocked) 0 else 1
-        }.thenBy {
-            if (it.packageName in priorityPackageNames) 0 else 1
-        }.thenBy {
-            it.name.lowercase()
-        })
-
-        _apps.update { loadedApps }
-    }
-
-    private val priorityPackageNames = setOf(
-        "com.instagram.android", "com.snapchat.android", "com.reddit.frontpage",
-        "com.twitter.android", "com.facebook.katana", "com.tiktok.android",
-        "com.zhiliaoapp.musically", "com.google.android.youtube", "com.pinterest",
-        "com.linkedin.android"
-    )
-
-    private fun getInstalledApps(): MutableList<AppInfo> {
-        val pm: PackageManager = packageManager
-        val apps = mutableListOf<AppInfo>()
-        val prefs = getSharedPreferences("blocked_apps", Context.MODE_PRIVATE)
-        val intent = Intent(Intent.ACTION_MAIN, null).apply {
-            addCategory(Intent.CATEGORY_LAUNCHER)
-        }
-
-        val resolveInfoList = pm.queryIntentActivities(intent, 0)
-
-        for (resolveInfo in resolveInfoList) {
-            val appInfo: ApplicationInfo = resolveInfo.activityInfo.applicationInfo
-
-            if (appInfo.packageName != this.packageName && (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0) {
-                val appName = appInfo.loadLabel(pm).toString()
-                val appIcon = appInfo.loadIcon(pm)
-                val packageName = appInfo.packageName
-                val isBlocked = prefs.getBoolean(packageName, false)
-                apps.add(AppInfo(appName, packageName, appIcon, isBlocked))
-            }
-        }
-        return apps
-    }
-
-    private fun toggleAppBlocking(appInfo: AppInfo, isBlocked: Boolean) {
-        if (isBlocked && !isAccessibilityServiceEnabled()) {
-            showAccessibilityPermissionDialog()
-            return
-        }
-
-        appInfo.isBlocked = isBlocked
-        saveBlockingState(appInfo.packageName, isBlocked)
-
-        val message = if (isBlocked) "${appInfo.name} is now blocked" else "${appInfo.name} blocking disabled"
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-
-        val currentList = _apps.value.toMutableList()
-        val index = currentList.indexOfFirst { it.packageName == appInfo.packageName }
-        if (index != -1) {
-            currentList[index] = appInfo
-        }
-        currentList.sortWith(compareBy<AppInfo> {
-            if (it.isBlocked) 0 else 1
-        }.thenBy {
-            if (it.packageName in priorityPackageNames) 0 else 1
-        }.thenBy {
-            it.name.lowercase()
-        })
-        _apps.update { currentList }
+        viewModel.loadAndSortApps(packageManager, this)
     }
 
     private fun isAccessibilityServiceEnabled(): Boolean {
@@ -137,22 +92,8 @@ class MainActivity : AppCompatActivity() {
         return enabledServices.any { it.resolveInfo.serviceInfo.packageName == packageName }
     }
 
-    private fun showAccessibilityPermissionDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Accessibility Permission Required")
-            .setMessage("To block apps, this app needs accessibility permission. Please enable it in the settings.")
-            .setPositiveButton("Go to Settings") { _, _ -> openAccessibilitySettings() }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
     private fun openAccessibilitySettings() {
         startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-    }
-
-    private fun saveBlockingState(packageName: String, isBlocked: Boolean) {
-        val prefs = getSharedPreferences("blocked_apps", Context.MODE_PRIVATE)
-        prefs.edit { putBoolean(packageName, isBlocked) }
     }
 }
 

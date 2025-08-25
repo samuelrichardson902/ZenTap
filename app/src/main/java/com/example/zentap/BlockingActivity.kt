@@ -2,12 +2,12 @@ package com.example.zentap
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import com.example.zentap.ui.screens.blocked.BlockedScreen
 
-class BlockingActivity : AppCompatActivity() {
+class BlockingActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

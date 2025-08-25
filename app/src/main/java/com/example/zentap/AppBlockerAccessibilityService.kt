@@ -7,13 +7,21 @@ import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 
+import android.content.pm.PackageManager
+
 class AppBlockerAccessibilityService : AccessibilityService() {
 
     private val TAG = "AppBlockerService"
+    private var launcherPackageName: String? = null
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString() ?: return
+
+            if (packageName == this.packageName || packageName == launcherPackageName) {
+                return
+            }
+
             if (isAppBlocked(packageName)) {
                 showBlockingScreen(packageName)
             }
@@ -24,7 +32,16 @@ class AppBlockerAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        launcherPackageName = getLauncherPackageName()
         Log.d(TAG, "Accessibility Service is connected and running.")
+    }
+
+    private fun getLauncherPackageName(): String? {
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+        val resolveInfo = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        return resolveInfo?.activityInfo?.packageName
     }
 
     private fun isAppBlocked(packageName: String): Boolean {

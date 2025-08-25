@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.runtime)
     androidTestImplementation(platform(libs.compose.bom))
@@ -69,6 +70,9 @@ dependencies {
 
     // ✅ Accompanist
     implementation("com.google.accompanist:accompanist-drawablepainter:0.37.3")
+
+    // ✅ Coil
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     // ✅ Tests
     testImplementation(libs.junit)
