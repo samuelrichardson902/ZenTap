@@ -67,6 +67,9 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
 
+    // ✅ Accompanist
+    implementation("com.google.accompanist:accompanist-drawablepainter:0.37.3")
+
     // ✅ Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

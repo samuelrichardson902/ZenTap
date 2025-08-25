@@ -2,33 +2,24 @@ package com.example.zentap
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import com.example.zentap.ui.screens.blocked.BlockedScreen
 
 class BlockingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_blocking)
 
-        // ... (your existing findViewById and setText code is fine) ...
         val blockedPackage = intent.getStringExtra("blocked_package")
         val appName = getAppName(blockedPackage ?: "")
 
-        val titleText: TextView = findViewById(R.id.titleText)
-        val messageText: TextView = findViewById(R.id.messageText)
-        val closeButton: Button = findViewById(R.id.closeButton)
-
-        titleText.text = getString(R.string.app_blocked_title)
-        messageText.text = getString(R.string.app_blocked_message, appName)
-        supportActionBar?.hide()
-
-
-        // --- START OF FIX ---
-        closeButton.setOnClickListener {
-            goToHomeScreen()
+        setContent {
+            BlockedScreen(
+                appName = appName,
+                onClose = { goToHomeScreen() }
+            )
         }
 
         val callback = object : OnBackPressedCallback(true) {
@@ -37,7 +28,6 @@ class BlockingActivity : AppCompatActivity() {
             }
         }
         onBackPressedDispatcher.addCallback(this, callback)
-        // --- END OF FIX ---
     }
 
     private fun goToHomeScreen() {
@@ -46,7 +36,6 @@ class BlockingActivity : AppCompatActivity() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         startActivity(homeIntent)
-        // This is more forceful than finish(). It destroys the task completely.
         finishAndRemoveTask()
     }
 

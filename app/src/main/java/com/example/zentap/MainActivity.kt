@@ -10,27 +10,48 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
+import androidx.activity.compose.setContent
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.content.edit
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.example.zentap.ui.screens.home.AppUiModel
+import com.example.zentap.ui.screens.home.MainScreen
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var appAdapter: AppAdapter
+    private val _apps = MutableStateFlow<List<AppInfo>>(emptyList())
+    private val apps = _apps.asStateFlow()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        setContent {
+            val appState by apps.collectAsState()
+            val appUiModels = appState.map { appInfo ->
+                AppUiModel(
+                    name = appInfo.name,
+                    packageName = appInfo.packageName,
+                    icon = rememberDrawablePainter(drawable = appInfo.icon),
+                    blocked = appInfo.isBlocked
+                )
+            }
 
-        appAdapter = AppAdapter { appInfo, isBlocked ->
-            toggleAppBlocking(appInfo, isBlocked)
+            MainScreen(
+                apps = appUiModels,
+                onToggleBlock = { appUiModel, isBlocked ->
+                    val appInfo = apps.value.find { it.packageName == appUiModel.packageName }
+                    appInfo?.let {
+                        toggleAppBlocking(it, isBlocked)
+                    }
+                }
+            )
         }
-        recyclerView.adapter = appAdapter
     }
 
     override fun onResume() {
@@ -49,7 +70,7 @@ class MainActivity : AppCompatActivity() {
             it.name.lowercase()
         })
 
-        appAdapter.submitList(loadedApps)
+        _apps.update { loadedApps }
     }
 
     private val priorityPackageNames = setOf(
@@ -83,24 +104,23 @@ class MainActivity : AppCompatActivity() {
         return apps
     }
 
-    // --- START OF FIXED SECTION ---
     private fun toggleAppBlocking(appInfo: AppInfo, isBlocked: Boolean) {
         if (isBlocked && !isAccessibilityServiceEnabled()) {
             showAccessibilityPermissionDialog()
-            // When user returns from settings, onResume() will reload and fix the UI state.
             return
         }
 
-        // Update the state in the object and save it to SharedPreferences
         appInfo.isBlocked = isBlocked
         saveBlockingState(appInfo.packageName, isBlocked)
 
         val message = if (isBlocked) "${appInfo.name} is now blocked" else "${appInfo.name} blocking disabled"
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
-        // The sorting logic is now here, directly inside the function.
-        // This resolves the "unresolved reference" errors.
-        val currentList = appAdapter.currentList.toMutableList()
+        val currentList = _apps.value.toMutableList()
+        val index = currentList.indexOfFirst { it.packageName == appInfo.packageName }
+        if (index != -1) {
+            currentList[index] = appInfo
+        }
         currentList.sortWith(compareBy<AppInfo> {
             if (it.isBlocked) 0 else 1
         }.thenBy {
@@ -108,10 +128,8 @@ class MainActivity : AppCompatActivity() {
         }.thenBy {
             it.name.lowercase()
         })
-
-        appAdapter.submitList(currentList)
+        _apps.update { currentList }
     }
-    // --- END OF FIXED SECTION ---
 
     private fun isAccessibilityServiceEnabled(): Boolean {
         val accessibilityManager = getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
@@ -120,7 +138,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showAccessibilityPermissionDialog() {
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle("Accessibility Permission Required")
             .setMessage("To block apps, this app needs accessibility permission. Please enable it in the settings.")
             .setPositiveButton("Go to Settings") { _, _ -> openAccessibilitySettings() }
@@ -138,7 +156,6 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-// Ensure isBlocked is a 'var' so you can modify it directly.
 data class AppInfo(
     val name: String,
     val packageName: String,
