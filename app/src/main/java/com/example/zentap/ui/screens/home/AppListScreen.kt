@@ -1,5 +1,6 @@
 package com.example.zentap.ui.screens.home
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -13,36 +14,47 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.zentap.AppInfo
-import com.example.zentap.CategorizedApps
 import com.example.zentap.MainViewModel
+
+data class AppUiModel(
+    val name: String,
+    val packageName: String,
+    val isBlocked: Boolean
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(
-    apps: CategorizedApps,
-    isOverallToggleOn: Boolean,
-    onOverallToggle: (Boolean) -> Unit,
-    onToggleBlock: (AppUiModel, Boolean) -> Unit,
-    viewModel: MainViewModel
+fun AppListScreen(
+    viewModel: MainViewModel,
+    isAccessibilityServiceEnabled: () -> Boolean,
+    openAccessibilitySettings: () -> Unit
 ) {
+    val categorizedApps by viewModel.categorizedApps.collectAsState()
+    val isOverallToggleOn by viewModel.isOverallToggleOn.collectAsState()
+    var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
     // State to track which categories are expanded
     var expandedCategories by remember { mutableStateOf(setOf<String>()) }
 
@@ -58,12 +70,17 @@ fun MainScreen(
                         Text(
                             text = "Enabled",
                             fontSize = 16.sp,
-                            color = Color.Black
                         )
                         Spacer(Modifier.padding(horizontal = 8.dp))
                         Switch(
                             checked = isOverallToggleOn,
-                            onCheckedChange = onOverallToggle
+                            onCheckedChange = { isEnabled ->
+                                if (isEnabled && !isAccessibilityServiceEnabled()) {
+                                    showDialog = true
+                                } else {
+                                    viewModel.toggleOverallState(isEnabled, context)
+                                }
+                            }
                         )
                     }
                 }
@@ -73,7 +90,7 @@ fun MainScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .background(Color(0xFFF5F5F5))
+                .background(MaterialTheme.colorScheme.background)
                 .fillMaxSize()
         ) {
             LazyColumn(
@@ -83,7 +100,7 @@ fun MainScreen(
             ) {
                 // Section for currently blocked apps
                 item {
-                    if (apps.blockedApps.isNotEmpty()) {
+                    if (categorizedApps.blockedApps.isNotEmpty()) {
                         Text(
                             text = "Blocked Apps",
                             fontWeight = FontWeight.Bold,
@@ -91,14 +108,28 @@ fun MainScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
-                                .background(Color.White)
+                                .background(MaterialTheme.colorScheme.surface)
                         )
                     }
                 }
-                items(items = apps.blockedApps, key = { it.packageName }) { app ->
+                items(items = categorizedApps.blockedApps, key = { it.packageName }) { app ->
                     AppItem(
                         app = AppUiModel(app.name, app.packageName, app.isBlocked),
-                        onToggle = { isBlocked -> onToggleBlock(AppUiModel(app.name, app.packageName, app.isBlocked), isBlocked) }
+                        onToggle = { isBlocked ->
+                            val appInfo = categorizedApps.blockedApps.find { it.packageName == app.packageName }
+                                ?: categorizedApps.categories.values.flatten().find { it.packageName == app.packageName }
+                            appInfo?.let {
+                                if (isBlocked && !isAccessibilityServiceEnabled()) {
+                                    showDialog = true
+                                } else {
+                                    viewModel.toggleAppBlocking(it, isBlocked, context)
+                                    val message =
+                                        if (isBlocked) "${it.name} is now blocked"
+                                        else "${it.name} blocking disabled"
+                                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
                     )
                 }
 
@@ -106,7 +137,7 @@ fun MainScreen(
                 item { Spacer(modifier = Modifier.padding(8.dp)) }
 
                 // Sections for other apps, grouped by category
-                apps.categories.forEach { (category, categoryApps) ->
+                categorizedApps.categories.forEach { (category, categoryApps) ->
                     item(key = category) {
                         ExpandableCategoryHeader(
                             categoryName = category,
@@ -124,13 +155,69 @@ fun MainScreen(
                         items(items = categoryApps, key = { it.packageName }) { app ->
                             AppItem(
                                 app = AppUiModel(app.name, app.packageName, app.isBlocked),
-                                onToggle = { isBlocked -> onToggleBlock(AppUiModel(app.name, app.packageName, app.isBlocked), isBlocked) }
+                                onToggle = { isBlocked ->
+                                    val appInfo = categorizedApps.blockedApps.find { it.packageName == app.packageName }
+                                        ?: categorizedApps.categories.values.flatten().find { it.packageName == app.packageName }
+                                    appInfo?.let {
+                                        if (isBlocked && !isAccessibilityServiceEnabled()) {
+                                            showDialog = true
+                                        } else {
+                                            viewModel.toggleAppBlocking(it, isBlocked, context)
+                                            val message =
+                                                if (isBlocked) "${it.name} is now blocked"
+                                                else "${it.name} blocking disabled"
+                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
                             )
                         }
                     }
                 }
             }
         }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Accessibility Permission Required") },
+            text = {
+                Text("To block apps, this app needs accessibility permission. Please enable it in the settings.")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    openAccessibilitySettings()
+                    showDialog = false
+                }) {
+                    Text("Go to Settings")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun AppItem(app: AppUiModel, onToggle: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = app.name,
+            modifier = Modifier.weight(1f)
+        )
+        Switch(
+            checked = app.isBlocked,
+            onCheckedChange = onToggle
+        )
     }
 }
 
@@ -145,7 +232,7 @@ fun ExpandableCategoryHeader(
             .fillMaxWidth()
             .clickable { onToggleExpand() }
             .padding(16.dp)
-            .background(Color.White),
+            .background(MaterialTheme.colorScheme.surface),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

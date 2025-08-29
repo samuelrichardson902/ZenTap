@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.runtime)
     androidTestImplementation(platform(libs.compose.bom))

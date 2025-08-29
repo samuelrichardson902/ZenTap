@@ -20,12 +20,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.zentap.ui.screens.home.AppUiModel
-import com.example.zentap.ui.screens.home.MainScreen
+import com.example.zentap.ui.screens.MainScreen
+import com.example.zentap.ui.theme.ZenTapTheme
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: MainViewModel by viewModels()
+    val viewModel: MainViewModel by viewModels()
     private var packageReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,59 +52,8 @@ class MainActivity : ComponentActivity() {
         registerReceiver(packageReceiver, filter)
 
         setContent {
-            val categorizedApps by viewModel.categorizedApps.collectAsState()
-            val isOverallToggleOn by viewModel.isOverallToggleOn.collectAsState()
-            var showDialog by remember { mutableStateOf(false) }
-
-            MainScreen(
-                apps = categorizedApps,
-                isOverallToggleOn = isOverallToggleOn,
-                onOverallToggle = { isEnabled ->
-                    if (isEnabled && !isAccessibilityServiceEnabled()) {
-                        showDialog = true
-                    } else {
-                        viewModel.toggleOverallState(isEnabled, this)
-                    }
-                },
-                onToggleBlock = { appUiModel, isBlocked ->
-                    val appInfo = categorizedApps.blockedApps.find { it.packageName == appUiModel.packageName }
-                        ?: categorizedApps.categories.values.flatten().find { it.packageName == appUiModel.packageName }
-                    appInfo?.let {
-                        if (isBlocked && !isAccessibilityServiceEnabled()) {
-                            showDialog = true
-                        } else {
-                            viewModel.toggleAppBlocking(it, isBlocked, this)
-                            val message =
-                                if (isBlocked) "${it.name} is now blocked"
-                                else "${it.name} blocking disabled"
-                            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                },
-                viewModel = viewModel
-            )
-
-            if (showDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDialog = false },
-                    title = { Text("Accessibility Permission Required") },
-                    text = {
-                        Text("To block apps, this app needs accessibility permission. Please enable it in the settings.")
-                    },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            openAccessibilitySettings()
-                            showDialog = false
-                        }) {
-                            Text("Go to Settings")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDialog = false }) {
-                            Text("Cancel")
-                        }
-                    }
-                )
+            ZenTapTheme(darkTheme = true) {
+                MainScreen()
             }
         }
     }
@@ -122,7 +71,7 @@ class MainActivity : ComponentActivity() {
         packageReceiver = null
     }
 
-    private fun isAccessibilityServiceEnabled(): Boolean {
+    fun isAccessibilityServiceEnabled(): Boolean {
         val accessibilityManager =
             getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
         val enabledServices =
@@ -130,7 +79,7 @@ class MainActivity : ComponentActivity() {
         return enabledServices.any { it.resolveInfo.serviceInfo.packageName == packageName }
     }
 
-    private fun openAccessibilitySettings() {
+    fun openAccessibilitySettings() {
         startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
     }
 }
