@@ -57,8 +57,10 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
+    implementation(libs.compose.foundation)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.runtime)
     androidTestImplementation(platform(libs.compose.bom))
@@ -66,6 +68,12 @@ dependencies {
     // ✅ Debug tools
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
+
+    // ✅ Accompanist
+    implementation("com.google.accompanist:accompanist-drawablepainter:0.37.3")
+
+    // ✅ Coil
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     // ✅ Tests
     testImplementation(libs.junit)

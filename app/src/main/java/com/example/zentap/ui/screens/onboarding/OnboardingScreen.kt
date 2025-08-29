@@ -35,7 +35,7 @@ fun OnboardingScreen(
         Spacer(modifier = Modifier.height(64.dp))
 
         Icon(
-            painter = painterResource(id = R.mipmap.ic_launcher),
+            painter = painterResource(id = R.drawable.ic_launcher_foreground),
             contentDescription = stringResource(R.string.app_name),
             modifier = Modifier.size(120.dp)
         )

@@ -1,37 +1,33 @@
 package com.example.zentap.ui.screens.home
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import android.content.pm.PackageManager
+import android.widget.ImageView
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 
 data class AppUiModel(
     val name: String,
     val packageName: String,
-    val icon: Painter,
     val blocked: Boolean
 )
 
 @Composable
 fun AppItem(
     app: AppUiModel,
-    onToggle: (Boolean) -> Unit
+    onToggle: (Boolean) -> Unit,
 ) {
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -45,9 +41,24 @@ fun AppItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = app.icon,
-                contentDescription = "App icon",
+            // Replace AsyncImage with AndroidView to load the app icon
+            AndroidView(
+                factory = { ctx ->
+                    ImageView(ctx).apply {
+                        try {
+                            val icon = ctx.packageManager.getApplicationIcon(app.packageName)
+                            setImageDrawable(icon)
+                        } catch (e: PackageManager.NameNotFoundException) {
+                            e.printStackTrace()
+                            setImageDrawable(
+                                ContextCompat.getDrawable(
+                                    ctx,
+                                    android.R.drawable.sym_def_app_icon
+                                )
+                            )
+                        }
+                    }
+                },
                 modifier = Modifier.size(48.dp)
             )
 
@@ -59,7 +70,7 @@ fun AppItem(
                 Text(
                     text = app.name,
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                     color = Color(0xFF333333)
                 )
                 Text(

@@ -6,24 +6,23 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
-import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import com.example.zentap.ui.screens.onboarding.OnboardingScreen
 
-class OnboardingActivity : AppCompatActivity() {
+class OnboardingActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_onboarding)
-
-        val grantButton: Button = findViewById(R.id.grantPermissionButton)
-        grantButton.setOnClickListener {
-            openAccessibilitySettings()
+        setContent {
+            OnboardingScreen(onGrantPermission = {
+                openAccessibilitySettings()
+            })
         }
     }
 
     override fun onResume() {
         super.onResume()
-        // When the user returns from the settings screen, check the permission again.
         if (isAccessibilityServiceEnabled()) {
             navigateToMainActivity()
         }
@@ -38,7 +37,6 @@ class OnboardingActivity : AppCompatActivity() {
     private fun navigateToMainActivity() {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
-        // Finish this activity so the user can't navigate back to it.
         finish()
     }
 

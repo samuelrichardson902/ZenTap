@@ -2,42 +2,67 @@ package com.example.zentap
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.compose.setContent
+import androidx.lifecycle.ViewModelProvider
+import com.example.zentap.ui.screens.blocked.BlockedFeatureScreen
+import com.example.zentap.ui.screens.blocked.BlockedViewModel
 
-class BlockingActivity : AppCompatActivity() {
+class BlockingActivity : ComponentActivity() {
+
+    private lateinit var viewModel: BlockedViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_blocking)
 
-        // ... (your existing findViewById and setText code is fine) ...
-        val blockedPackage = intent.getStringExtra("blocked_package")
-        val appName = getAppName(blockedPackage ?: "")
+        viewModel = ViewModelProvider(this)[BlockedViewModel::class.java]
 
-        val titleText: TextView = findViewById(R.id.titleText)
-        val messageText: TextView = findViewById(R.id.messageText)
-        val closeButton: Button = findViewById(R.id.closeButton)
+        val blockedPackage = intent.getStringExtra("blocked_package") ?: ""
+        val appName = getAppName(blockedPackage)
 
-        titleText.text = getString(R.string.app_blocked_title)
-        messageText.text = getString(R.string.app_blocked_message, appName)
-        supportActionBar?.hide()
-
-
-        // --- START OF FIX ---
-        closeButton.setOnClickListener {
-            goToHomeScreen()
+        setContent {
+            BlockedFeatureScreen(
+                appName = appName,
+                viewModel = viewModel,
+                onUnlockApp = {
+                    // When the initial countdown finishes, tell the service to start
+                    // the 1-minute access timer.
+                    sendGrantAccessBroadcast(blockedPackage)
+                    finish() // Close the blocking screen
+                },
+                onClose = { goToHomeScreen() }
+            )
         }
 
-        val callback = object : OnBackPressedCallback(true) {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 goToHomeScreen()
             }
+        })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Resume the countdown if the user comes back to the screen
+        viewModel.resumeCountdown()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Pause the countdown if the user navigates away
+        viewModel.pauseCountdown()
+    }
+
+    /**
+     * Sends a broadcast to the Accessibility Service to grant temporary access.
+     */
+    private fun sendGrantAccessBroadcast(packageName: String) {
+        if (packageName.isBlank()) return
+        val intent = Intent(AppBlockerAccessibilityService.ACTION_GRANT_TEMP_ACCESS).apply {
+            putExtra(AppBlockerAccessibilityService.EXTRA_PACKAGE_NAME, packageName)
         }
-        onBackPressedDispatcher.addCallback(this, callback)
-        // --- END OF FIX ---
+        sendBroadcast(intent)
     }
 
     private fun goToHomeScreen() {
@@ -46,14 +71,12 @@ class BlockingActivity : AppCompatActivity() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         startActivity(homeIntent)
-        // This is more forceful than finish(). It destroys the task completely.
         finishAndRemoveTask()
     }
 
     private fun getAppName(packageName: String): String {
         return try {
-            val appInfo = packageManager.getApplicationInfo(packageName, 0)
-            packageManager.getApplicationLabel(appInfo).toString()
+            packageManager.getApplicationLabel(packageManager.getApplicationInfo(packageName, 0)).toString()
         } catch (e: Exception) {
             "This app"
         }

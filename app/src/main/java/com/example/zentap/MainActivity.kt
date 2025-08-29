@@ -1,147 +1,136 @@
 package com.example.zentap
 
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
+import android.content.IntentFilter
 import android.os.Bundle
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.edit
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.zentap.ui.screens.home.AppUiModel
+import com.example.zentap.ui.screens.home.MainScreen
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var appAdapter: AppAdapter
+    private val viewModel: MainViewModel by viewModels()
+    private var packageReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
-        appAdapter = AppAdapter { appInfo, isBlocked ->
-            toggleAppBlocking(appInfo, isBlocked)
+        // Register receiver for app install/uninstall events
+        packageReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_PACKAGE_ADDED ||
+                    intent?.action == Intent.ACTION_PACKAGE_REMOVED
+                ) {
+                    context?.let {
+                        viewModel.loadAndSortApps(it.packageManager, it, forceReload = true)
+                    }
+                }
+            }
         }
-        recyclerView.adapter = appAdapter
+
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addDataScheme("package")
+        }
+        registerReceiver(packageReceiver, filter)
+
+        setContent {
+            val categorizedApps by viewModel.categorizedApps.collectAsState()
+            val isOverallToggleOn by viewModel.isOverallToggleOn.collectAsState()
+            var showDialog by remember { mutableStateOf(false) }
+
+            MainScreen(
+                apps = categorizedApps,
+                isOverallToggleOn = isOverallToggleOn,
+                onOverallToggle = { isEnabled ->
+                    if (isEnabled && !isAccessibilityServiceEnabled()) {
+                        showDialog = true
+                    } else {
+                        viewModel.toggleOverallState(isEnabled, this)
+                    }
+                },
+                onToggleBlock = { appUiModel, isBlocked ->
+                    val appInfo = categorizedApps.blockedApps.find { it.packageName == appUiModel.packageName }
+                        ?: categorizedApps.categories.values.flatten().find { it.packageName == appUiModel.packageName }
+                    appInfo?.let {
+                        if (isBlocked && !isAccessibilityServiceEnabled()) {
+                            showDialog = true
+                        } else {
+                            viewModel.toggleAppBlocking(it, isBlocked, this)
+                            val message =
+                                if (isBlocked) "${it.name} is now blocked"
+                                else "${it.name} blocking disabled"
+                            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                },
+                viewModel = viewModel
+            )
+
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Accessibility Permission Required") },
+                    text = {
+                        Text("To block apps, this app needs accessibility permission. Please enable it in the settings.")
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            openAccessibilitySettings()
+                            showDialog = false
+                        }) {
+                            Text("Go to Settings")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        loadAndSortApps()
+        val pm = packageManager
+        // Uses caching in ViewModel (won’t reload if already loaded)
+        viewModel.loadAndSortApps(pm, this)
     }
 
-    private fun loadAndSortApps() {
-        val loadedApps = getInstalledApps()
-
-        loadedApps.sortWith(compareBy<AppInfo> {
-            if (it.isBlocked) 0 else 1
-        }.thenBy {
-            if (it.packageName in priorityPackageNames) 0 else 1
-        }.thenBy {
-            it.name.lowercase()
-        })
-
-        appAdapter.submitList(loadedApps)
+    override fun onDestroy() {
+        super.onDestroy()
+        packageReceiver?.let { unregisterReceiver(it) }
+        packageReceiver = null
     }
-
-    private val priorityPackageNames = setOf(
-        "com.instagram.android", "com.snapchat.android", "com.reddit.frontpage",
-        "com.twitter.android", "com.facebook.katana", "com.tiktok.android",
-        "com.zhiliaoapp.musically", "com.google.android.youtube", "com.pinterest",
-        "com.linkedin.android"
-    )
-
-    private fun getInstalledApps(): MutableList<AppInfo> {
-        val pm: PackageManager = packageManager
-        val apps = mutableListOf<AppInfo>()
-        val prefs = getSharedPreferences("blocked_apps", Context.MODE_PRIVATE)
-        val intent = Intent(Intent.ACTION_MAIN, null).apply {
-            addCategory(Intent.CATEGORY_LAUNCHER)
-        }
-
-        val resolveInfoList = pm.queryIntentActivities(intent, 0)
-
-        for (resolveInfo in resolveInfoList) {
-            val appInfo: ApplicationInfo = resolveInfo.activityInfo.applicationInfo
-
-            if (appInfo.packageName != this.packageName && (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0) {
-                val appName = appInfo.loadLabel(pm).toString()
-                val appIcon = appInfo.loadIcon(pm)
-                val packageName = appInfo.packageName
-                val isBlocked = prefs.getBoolean(packageName, false)
-                apps.add(AppInfo(appName, packageName, appIcon, isBlocked))
-            }
-        }
-        return apps
-    }
-
-    // --- START OF FIXED SECTION ---
-    private fun toggleAppBlocking(appInfo: AppInfo, isBlocked: Boolean) {
-        if (isBlocked && !isAccessibilityServiceEnabled()) {
-            showAccessibilityPermissionDialog()
-            // When user returns from settings, onResume() will reload and fix the UI state.
-            return
-        }
-
-        // Update the state in the object and save it to SharedPreferences
-        appInfo.isBlocked = isBlocked
-        saveBlockingState(appInfo.packageName, isBlocked)
-
-        val message = if (isBlocked) "${appInfo.name} is now blocked" else "${appInfo.name} blocking disabled"
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-
-        // The sorting logic is now here, directly inside the function.
-        // This resolves the "unresolved reference" errors.
-        val currentList = appAdapter.currentList.toMutableList()
-        currentList.sortWith(compareBy<AppInfo> {
-            if (it.isBlocked) 0 else 1
-        }.thenBy {
-            if (it.packageName in priorityPackageNames) 0 else 1
-        }.thenBy {
-            it.name.lowercase()
-        })
-
-        appAdapter.submitList(currentList)
-    }
-    // --- END OF FIXED SECTION ---
 
     private fun isAccessibilityServiceEnabled(): Boolean {
-        val accessibilityManager = getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-        val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+        val accessibilityManager =
+            getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        val enabledServices =
+            accessibilityManager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
         return enabledServices.any { it.resolveInfo.serviceInfo.packageName == packageName }
-    }
-
-    private fun showAccessibilityPermissionDialog() {
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Accessibility Permission Required")
-            .setMessage("To block apps, this app needs accessibility permission. Please enable it in the settings.")
-            .setPositiveButton("Go to Settings") { _, _ -> openAccessibilitySettings() }
-            .setNegativeButton("Cancel", null)
-            .show()
     }
 
     private fun openAccessibilitySettings() {
         startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
     }
-
-    private fun saveBlockingState(packageName: String, isBlocked: Boolean) {
-        val prefs = getSharedPreferences("blocked_apps", Context.MODE_PRIVATE)
-        prefs.edit { putBoolean(packageName, isBlocked) }
-    }
 }
-
-// Ensure isBlocked is a 'var' so you can modify it directly.
-data class AppInfo(
-    val name: String,
-    val packageName: String,
-    val icon: Drawable,
-    var isBlocked: Boolean
-)
