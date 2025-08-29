@@ -1,13 +1,9 @@
 package com.example.zentap.ui.screens.blocked
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,13 +15,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.zentap.R
+import com.example.zentap.data.BlockedMessage
 
 @Composable
 fun BlockedScreen(
     appName: String,
-    onClose: () -> Unit
+    blockedMessage: BlockedMessage,
+    onClose: () -> Unit,
+    onRequestAccess: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -35,42 +33,41 @@ fun BlockedScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_block),
-            contentDescription = "Block icon",
-            tint = Color(0xFFFF4444),
-            modifier = Modifier
-                .size(120.dp)
-                .padding(bottom = 32.dp)
-        )
-
         Text(
-            text = "App Blocked",
+            text = blockedMessage.emoji,
+            fontSize = 100.sp,
+            modifier = Modifier.padding(bottom = 32.dp)
+        )
+        // --- START OF CHANGE ---
+        // The message text is now formatted with the app's name.
+        Text(
+            text = blockedMessage.text.format(appName),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        Text(
-            text = "$appName is currently blocked. Take a break and focus on what matters most.",
-            fontSize = 16.sp,
-            color = Color(0xFFCCCCCC),
             textAlign = TextAlign.Center,
-            lineHeight = 20.sp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = 32.dp) // Increased padding
         )
+        // The redundant text showing the app name has been removed.
+        // --- END OF CHANGE ---
 
-        Button(onClick = onClose) {
-            Text("Close")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Button(
+                onClick = onClose,
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333))
+            ) {
+                Text("Close")
+            }
+            Button(
+                onClick = onRequestAccess,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Request 1 Minute")
+            }
         }
     }
-}
-
-@Preview
-@Composable
-fun BlockedScreenPreview() {
-    BlockedScreen(appName = "Some App", onClose = {})
 }

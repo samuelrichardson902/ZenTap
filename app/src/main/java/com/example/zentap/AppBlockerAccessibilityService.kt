@@ -2,75 +2,129 @@ package com.example.zentap
 
 import android.accessibilityservice.AccessibilityService
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-
-import android.content.pm.PackageManager
+import com.example.zentap.data.AppSettings
 
 class AppBlockerAccessibilityService : AccessibilityService() {
 
     private val TAG = "AppBlockerService"
-    private var launcherPackageName: String? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private val reblockRunnableMap = mutableMapOf<String, Runnable>()
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            val packageName = event.packageName?.toString() ?: return
-
-            if (packageName == this.packageName || packageName == launcherPackageName) {
-                return
-            }
-
-            if (isAppBlocked(packageName)) {
-                showBlockingScreen(packageName)
+    // Original temporary access receiver, correctly re-included
+    private val temporaryAccessReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == ACTION_GRANT_TEMP_ACCESS) {
+                val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME) ?: return
+                grantTemporaryAccess(packageName)
             }
         }
     }
-
-    override fun onInterrupt() {}
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        launcherPackageName = getLauncherPackageName()
-        Log.d(TAG, "Accessibility Service is connected and running.")
+        // Register the temporary access receiver when the service connects
+        registerReceiver(temporaryAccessReceiver, IntentFilter(ACTION_GRANT_TEMP_ACCESS), RECEIVER_EXPORTED)
+        Log.d(TAG, "Accessibility Service connected.")
+    }
+
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
+        val packageName = event.packageName?.toString() ?: return
+        if (packageName == this.packageName || packageName == getLauncherPackageName()) return
+
+        // The core logic: check overall toggle first, then individual app settings.
+        if (isOverallToggleOn() && shouldBlockApp(packageName)) {
+            showBlockingScreen(packageName)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Unregister the receiver and clear all pending callbacks
+        unregisterReceiver(temporaryAccessReceiver)
+        handler.removeCallbacksAndMessages(null)
+        Log.d(TAG, "Accessibility Service destroyed.")
+    }
+
+    private fun shouldBlockApp(packageName: String): Boolean {
+        // First, check for temporary unlock
+        val tempPrefs = getSharedPreferences(PREFS_TEMP_UNLOCK, Context.MODE_PRIVATE)
+        val expirationTime = tempPrefs.getLong(packageName, 0)
+        if (System.currentTimeMillis() < expirationTime) {
+            return false
+        }
+        // Then, check the individual app's blocking state
+        val blockedPrefs = getSharedPreferences(MainViewModel.BLOCKED_APPS_PREFS, Context.MODE_PRIVATE)
+        return blockedPrefs.getBoolean(packageName, false)
+    }
+
+    private fun isOverallToggleOn(): Boolean {
+        val prefs = getSharedPreferences(MainViewModel.OVERALL_TOGGLE_PREFS, Context.MODE_PRIVATE)
+        return prefs.getBoolean("is_on", true)
+    }
+
+    // This function is intended to be called from a UI component to change the state
+    fun setOverallToggleState(isEnabled: Boolean) {
+        val prefs = getSharedPreferences(MainViewModel.OVERALL_TOGGLE_PREFS, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("is_on", isEnabled).apply()
+        Log.d(TAG, "Overall toggle state set to: $isEnabled")
+    }
+
+    private fun grantTemporaryAccess(packageName: String) {
+        Log.d(TAG, "Granting temporary access to $packageName")
+        val unlockTime = AppSettings.getUnlockTime(this)
+        val prefs = getSharedPreferences(PREFS_TEMP_UNLOCK, MODE_PRIVATE)
+        val expirationTime = System.currentTimeMillis() + unlockTime
+        prefs.edit().putLong(packageName, expirationTime).apply()
+        reblockRunnableMap[packageName]?.let { handler.removeCallbacks(it) }
+
+        val reblockRunnable = Runnable {
+            Log.d(TAG, "Temporary access for $packageName expired. Re-blocking.")
+            showBlockingScreen(packageName)
+        }
+        handler.postDelayed(reblockRunnable, unlockTime)
+        reblockRunnableMap[packageName] = reblockRunnable
+    }
+
+    private fun showBlockingScreen(packageName: String) {
+        val intent = Intent(this, BlockingActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY
+            putExtra("blocked_package", packageName)
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            System.currentTimeMillis().toInt(),
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        try {
+            pendingIntent.send()
+        } catch (e: PendingIntent.CanceledException) {
+            Log.e(TAG, "Failed to show blocking screen.", e)
+        }
     }
 
     private fun getLauncherPackageName(): String? {
-        val intent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
-        }
+        val intent = Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_HOME) }
         val resolveInfo = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
         return resolveInfo?.activityInfo?.packageName
     }
 
-    private fun isAppBlocked(packageName: String): Boolean {
-        val prefs = getSharedPreferences("blocked_apps", Context.MODE_PRIVATE)
-        return prefs.getBoolean(packageName, false)
-    }
+    override fun onInterrupt() {}
 
-    private fun showBlockingScreen(packageName: String) {
-        // --- START OF FIX ---
-        // Create the regular Intent as before
-        val intent = Intent(this, BlockingActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("blocked_package", packageName)
-        }
-
-        // Wrap it in a PendingIntent
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0, // requestCode, can be 0 for this use case
-            intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        try {
-            // Send the PendingIntent to have the system launch the activity
-            pendingIntent.send()
-        } catch (e: PendingIntent.CanceledException) {
-            Log.e(TAG, "PendingIntent was canceled", e)
-        }
-        // --- END OF FIX ---
+    companion object {
+        const val ACTION_GRANT_TEMP_ACCESS = "com.example.zentap.GRANT_TEMP_ACCESS"
+        const val EXTRA_PACKAGE_NAME = "package_name"
+        const val PREFS_TEMP_UNLOCK = "temp_unlock"
     }
 }
