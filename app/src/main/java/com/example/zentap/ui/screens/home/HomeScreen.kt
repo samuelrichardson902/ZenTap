@@ -87,7 +87,9 @@ fun BlockerControlCard(
     onToggle: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onToggle),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
@@ -109,8 +111,7 @@ fun BlockerControlCard(
                 imageVector = if (isBlockerEnabled) Icons.Default.Lock else Icons.Default.LockOpen,
                 contentDescription = "Toggle Blocker",
                 modifier = Modifier
-                    .size(40.dp)
-                    .clickable(onClick = onToggle),
+                    .size(40.dp),
                 tint = if (isBlockerEnabled) MaterialTheme.colorScheme.primary else Color.Gray
             )
         }

@@ -53,10 +53,13 @@ fun MainScreen() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
                 items.forEach { screen ->
+                    val isSelected = currentDestination?.hierarchy?.any {
+                        it.route == screen.route || (screen.route == "home" && it.route == "app_selection")
+                    } == true
                     NavigationBarItem(
                         icon = { Icon(screen.icon, contentDescription = null) },
                         label = { Text(screen.title) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                        selected = isSelected,
                         onClick = {
                             navController.navigate(screen.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
@@ -87,6 +90,7 @@ fun MainScreen() {
             composable("app_selection") {
                 AppSelectionScreen(
                     viewModel = activity.viewModel,
+                    navController = navController,
                     isAccessibilityServiceEnabled = { activity.isAccessibilityServiceEnabled() },
                     openAccessibilitySettings = { activity.openAccessibilitySettings() }
                 )
