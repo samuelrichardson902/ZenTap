@@ -19,10 +19,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,17 +33,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.zentap.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppListScreen(
+fun AppSelectionScreen(
     viewModel: MainViewModel,
+    navController: NavController,
     isAccessibilityServiceEnabled: () -> Boolean,
     openAccessibilitySettings: () -> Unit
 ) {
     val categorizedApps by viewModel.categorizedApps.collectAsState()
-    val isOverallToggleOn by viewModel.isOverallToggleOn.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -55,27 +54,10 @@ fun AppListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("App Blocker") },
-                actions = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(end = 16.dp)
-                    ) {
-                        Text(
-                            text = "Enabled",
-                            fontSize = 16.sp,
-                        )
-                        Spacer(Modifier.padding(horizontal = 8.dp))
-                        Switch(
-                            checked = isOverallToggleOn,
-                            onCheckedChange = { isEnabled ->
-                                if (isEnabled && !isAccessibilityServiceEnabled()) {
-                                    showDialog = true
-                                } else {
-                                    viewModel.toggleOverallState(isEnabled, context)
-                                }
-                            }
-                        )
+                title = { Text("Apps to Block") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
             )

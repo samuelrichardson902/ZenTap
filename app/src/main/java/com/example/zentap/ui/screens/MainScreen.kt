@@ -24,7 +24,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.zentap.MainActivity
 import com.example.zentap.ui.screens.analytics.AnalyticsScreen
-import com.example.zentap.ui.screens.home.AppListScreen
+import com.example.zentap.ui.screens.home.HomeScreen
+import com.example.zentap.ui.screens.home.AppSelectionScreen
 import com.example.zentap.ui.screens.settings.SettingsScreen
 import androidx.activity.compose.LocalActivity
 
@@ -52,17 +53,29 @@ fun MainScreen() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
                 items.forEach { screen ->
+                    val isSelected = currentDestination?.hierarchy?.any {
+                        it.route == screen.route || (screen.route == "home" && it.route == "app_selection")
+                    } == true
                     NavigationBarItem(
                         icon = { Icon(screen.icon, contentDescription = null) },
                         label = { Text(screen.title) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                        selected = isSelected,
                         onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                            if (screen.route == "home") {
+                                if (currentDestination?.route != "home") {
+                                    navController.popBackStack(
+                                        Screen.Home.route,
+                                        inclusive = false
+                                    )
                                 }
-                                launchSingleTop = true
-                                restoreState = true
+                            } else {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             }
                         }
                     )
@@ -76,8 +89,17 @@ fun MainScreen() {
             Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
-                AppListScreen(
+                HomeScreen(
                     viewModel = activity.viewModel,
+                    navController = navController,
+                    isAccessibilityServiceEnabled = { activity.isAccessibilityServiceEnabled() },
+                    openAccessibilitySettings = { activity.openAccessibilitySettings() }
+                )
+            }
+            composable("app_selection") {
+                AppSelectionScreen(
+                    viewModel = activity.viewModel,
+                    navController = navController,
                     isAccessibilityServiceEnabled = { activity.isAccessibilityServiceEnabled() },
                     openAccessibilitySettings = { activity.openAccessibilitySettings() }
                 )
