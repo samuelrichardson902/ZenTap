@@ -61,12 +61,21 @@ fun MainScreen() {
                         label = { Text(screen.title) },
                         selected = isSelected,
                         onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                            if (screen.route == "home") {
+                                if (currentDestination?.route != "home") {
+                                    navController.popBackStack(
+                                        Screen.Home.route,
+                                        inclusive = false
+                                    )
                                 }
-                                launchSingleTop = true
-                                restoreState = true
+                            } else {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             }
                         }
                     )
