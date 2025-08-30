@@ -27,18 +27,20 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
 
-    // ✅ Enable Compose
     buildFeatures {
         compose = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
@@ -50,10 +52,10 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
 
-    // ✅ Compose BOM
+    // Compose BOM
     implementation(platform(libs.compose.bom))
 
-    // ✅ Compose UI
+    // Compose UI
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
@@ -61,22 +63,24 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation(libs.androidx.material.icons.extended) // Material Icons
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.runtime)
+    implementation(libs.androidx.navigation.compose) // now using version catalog
+
     androidTestImplementation(platform(libs.compose.bom))
 
-    // ✅ Debug tools
+    // Debug tools
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
 
-    // ✅ Accompanist
+    // Accompanist (keep version inline for now)
     implementation("com.google.accompanist:accompanist-drawablepainter:0.37.3")
 
-    // ✅ Coil
+    // Coil
     implementation("io.coil-kt:coil-compose:2.6.0")
 
-    // ✅ Tests
+    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

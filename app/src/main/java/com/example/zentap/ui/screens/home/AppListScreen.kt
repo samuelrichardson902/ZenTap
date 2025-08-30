@@ -37,12 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.zentap.MainViewModel
 
-data class AppUiModel(
-    val name: String,
-    val packageName: String,
-    val isBlocked: Boolean
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppListScreen(
@@ -198,25 +192,6 @@ fun AppListScreen(
                     Text("Cancel")
                 }
             }
-        )
-    }
-}
-
-@Composable
-fun AppItem(app: AppUiModel, onToggle: (Boolean) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = app.name,
-            modifier = Modifier.weight(1f)
-        )
-        Switch(
-            checked = app.isBlocked,
-            onCheckedChange = onToggle
         )
     }
 }
