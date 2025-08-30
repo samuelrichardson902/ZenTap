@@ -24,7 +24,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.zentap.MainActivity
 import com.example.zentap.ui.screens.analytics.AnalyticsScreen
-import com.example.zentap.ui.screens.home.AppListScreen
+import com.example.zentap.ui.screens.home.HomeScreen
+import com.example.zentap.ui.screens.home.AppSelectionScreen
 import com.example.zentap.ui.screens.settings.SettingsScreen
 import androidx.activity.compose.LocalActivity
 
@@ -76,7 +77,15 @@ fun MainScreen() {
             Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
-                AppListScreen(
+                HomeScreen(
+                    viewModel = activity.viewModel,
+                    navController = navController,
+                    isAccessibilityServiceEnabled = { activity.isAccessibilityServiceEnabled() },
+                    openAccessibilitySettings = { activity.openAccessibilitySettings() }
+                )
+            }
+            composable("app_selection") {
+                AppSelectionScreen(
                     viewModel = activity.viewModel,
                     isAccessibilityServiceEnabled = { activity.isAccessibilityServiceEnabled() },
                     openAccessibilitySettings = { activity.openAccessibilitySettings() }
