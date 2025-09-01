@@ -32,7 +32,7 @@
         </activity> <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
-            android:exported="false"></activity> <!-- Blocking Activity -->
+            android:exported="false" /> <!-- Blocking Activity -->
         <activity
             android:name=".BlockingActivity"
             android:excludeFromRecents="true"
@@ -43,7 +43,7 @@
         <activity
             android:name=".RegisterTagActivity"
             android:exported="false"
-            android:theme="@style/Theme.ZenTap" />
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 
         <activity
             android:name=".NfcActivity"
@@ -55,6 +55,11 @@
                 <data
                     android:scheme="zentap"
                     android:host="tag"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="zentap" android:host="tag"/>
             </intent-filter>
         </activity>
         <service

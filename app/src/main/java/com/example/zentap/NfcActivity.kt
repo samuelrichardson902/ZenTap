@@ -2,6 +2,7 @@ package com.example.zentap
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.example.zentap.data.NfcSettings
@@ -11,7 +12,10 @@ class NfcActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
         intent?.data?.let { uri ->
+            Log.d("NfcActivity", "Launched with intent: ${intent?.data}")
+
             val scannedId = uri.lastPathSegment
             if (scannedId != null) {
                 handleScannedTag(scannedId)
