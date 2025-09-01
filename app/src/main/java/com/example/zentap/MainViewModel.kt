@@ -164,6 +164,6 @@ class MainViewModel : ViewModel() {
         const val OVERALL_TOGGLE_PREFS = "overall_toggle"
         const val BLOCKED_APPS_PREFS = "blocked_apps"
 
-        const val REGISTERED_TAG_PREFS = "registered_tag_id"
+        const val REGISTERED_TAGS_PREFS = "registered_tag_ids"
     }
 }
