@@ -39,6 +39,12 @@
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" /> <!-- Accessibility Service -->
+        <!-- Register Tag Activity -->
+        <activity
+            android:name=".RegisterTagActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ZenTap" />
+
         <activity
             android:name=".NfcActivity"
             android:exported="true">
