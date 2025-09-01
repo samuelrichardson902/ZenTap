@@ -163,5 +163,7 @@ class MainViewModel : ViewModel() {
     companion object {
         const val OVERALL_TOGGLE_PREFS = "overall_toggle"
         const val BLOCKED_APPS_PREFS = "blocked_apps"
+
+        const val REGISTERED_TAG_PREFS = "registered_tag_id"
     }
 }
