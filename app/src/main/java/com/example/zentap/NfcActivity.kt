@@ -29,7 +29,14 @@ class NfcActivity : ComponentActivity() {
     private fun handleScannedTag(scannedId: String) {
         val registeredTag = NfcSettings.getRegisteredTag(this)
 
-        if (registeredTag == scannedId) {
+        if (registeredTag == null) {
+            // No tag registered yet, so register this one and proceed to main activity.
+            NfcSettings.setRegisteredTag(this, scannedId)
+            Toast.makeText(this, "Tag registered successfully!", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        } else if (registeredTag == scannedId) {
             // Match → toggle blocked state
             val prefs = getSharedPreferences(MainViewModel.OVERALL_TOGGLE_PREFS, MODE_PRIVATE)
             val blocked = prefs.getBoolean("is_on", false)

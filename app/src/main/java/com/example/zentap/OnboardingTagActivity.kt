@@ -1,6 +1,9 @@
 package com.example.zentap
 
+import android.app.PendingIntent
 import android.content.Intent
+import android.nfc.NfcAdapter
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -20,12 +23,12 @@ import com.example.zentap.data.NfcSettings
 import com.example.zentap.ui.theme.ZenTapTheme
 
 class OnboardingTagActivity : ComponentActivity() {
+
+    private var nfcAdapter: NfcAdapter? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        handleIntent(intent)
-
-        addOnNewIntentListener { intent -> handleIntent(intent) }
-
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this)
         setContent {
             ZenTapTheme {
                 Surface(
@@ -38,17 +41,35 @@ class OnboardingTagActivity : ComponentActivity() {
         }
     }
 
-    private fun handleIntent(intent: Intent?) {
-        if (intent == null || intent.action != "android.nfc.action.NDEF_DISCOVERED") return
-        intent.data?.let { uri ->
-            val scannedId = uri.lastPathSegment
-            if (scannedId != null) {
-                NfcSettings.setRegisteredTag(this, scannedId)
-                Toast.makeText(this, "Tag registered successfully!", Toast.LENGTH_SHORT).show()
-                val mainActivityIntent = Intent(this, MainActivity::class.java)
-                mainActivityIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(mainActivityIntent)
-                finish()
+    override fun onResume() {
+        super.onResume()
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0,
+            Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0
+        )
+        nfcAdapter?.enableForegroundDispatch(this, pendingIntent, null, null)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        nfcAdapter?.disableForegroundDispatch(this)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED == intent?.action || NfcAdapter.ACTION_TAG_DISCOVERED == intent?.action) {
+            intent.data?.let { uri ->
+                val scannedId = uri.lastPathSegment
+                if (scannedId != null) {
+                    NfcSettings.setRegisteredTag(this, scannedId)
+                    Toast.makeText(this, "Tag registered successfully!", Toast.LENGTH_SHORT).show()
+                    val mainActivityIntent = Intent(this, MainActivity::class.java)
+                    mainActivityIntent.flags =
+                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(mainActivityIntent)
+                    finish()
+                }
             }
         }
     }

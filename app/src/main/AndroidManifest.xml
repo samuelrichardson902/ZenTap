@@ -45,11 +45,6 @@
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
-            <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:scheme="zentap" android:host="tag"/>
-            </intent-filter>
         </activity>
 
         <!-- Change Tag Activity -->
@@ -68,6 +63,11 @@
                 <data
                     android:scheme="zentap"
                     android:host="tag"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="zentap" android:host="tag"/>
             </intent-filter>
         </activity>
         <service
