@@ -23,6 +23,9 @@ class OnboardingTagActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         handleIntent(intent)
+
+        addOnNewIntentListener { intent -> handleIntent(intent) }
+
         setContent {
             ZenTapTheme {
                 Surface(
@@ -35,13 +38,9 @@ class OnboardingTagActivity : ComponentActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        handleIntent(intent)
-    }
-
     private fun handleIntent(intent: Intent?) {
-        intent?.data?.let { uri ->
+        if (intent == null || intent.action != "android.nfc.action.NDEF_DISCOVERED") return
+        intent.data?.let { uri ->
             val scannedId = uri.lastPathSegment
             if (scannedId != null) {
                 NfcSettings.setRegisteredTag(this, scannedId)
