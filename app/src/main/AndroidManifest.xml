@@ -39,9 +39,21 @@
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" /> <!-- Accessibility Service -->
-        <!-- Register Tag Activity -->
+        <!-- Onboarding Tag Activity -->
         <activity
-            android:name=".RegisterTagActivity"
+            android:name=".OnboardingTagActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="zentap" android:host="tag"/>
+            </intent-filter>
+        </activity>
+
+        <!-- Change Tag Activity -->
+        <activity
+            android:name=".ChangeTagActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 
@@ -55,11 +67,6 @@
                 <data
                     android:scheme="zentap"
                     android:host="tag"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:scheme="zentap" android:host="tag"/>
             </intent-filter>
         </activity>
         <service

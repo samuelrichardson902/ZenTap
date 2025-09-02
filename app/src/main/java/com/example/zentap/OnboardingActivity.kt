@@ -8,6 +8,7 @@ import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.example.zentap.data.NfcSettings
 import com.example.zentap.ui.screens.onboarding.OnboardingScreen
 
 class OnboardingActivity : ComponentActivity() {
@@ -24,7 +25,11 @@ class OnboardingActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         if (isAccessibilityServiceEnabled()) {
-            navigateToMainActivity()
+            if (NfcSettings.getRegisteredTag(this) == null) {
+                navigateToOnboardingTagActivity()
+            } else {
+                navigateToMainActivity()
+            }
         }
     }
 
@@ -36,6 +41,12 @@ class OnboardingActivity : ComponentActivity() {
 
     private fun navigateToMainActivity() {
         val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun navigateToOnboardingTagActivity() {
+        val intent = Intent(this, OnboardingTagActivity::class.java)
         startActivity(intent)
         finish()
     }
