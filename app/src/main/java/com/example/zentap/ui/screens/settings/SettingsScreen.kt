@@ -1,18 +1,34 @@
 package com.example.zentap.ui.screens.settings
 
-import androidx.compose.foundation.layout.Box
+import android.content.Intent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import com.example.zentap.ChangeTagActivity
 
 @Composable
 fun SettingsScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Settings Screen")
+        Button(onClick = {
+            val intent = Intent(context, ChangeTagActivity::class.java)
+            context.startActivity(intent)
+        }) {
+            Text(text = "Change Registered Tag")
+        }
     }
 }

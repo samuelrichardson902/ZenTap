@@ -39,9 +39,17 @@
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" /> <!-- Accessibility Service -->
-        <!-- Register Tag Activity -->
+        <!-- Onboarding Tag Activity -->
         <activity
-            android:name=".RegisterTagActivity"
+            android:name=".OnboardingTagActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+        </activity>
+
+        <!-- Change Tag Activity -->
+        <activity
+            android:name=".ChangeTagActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 

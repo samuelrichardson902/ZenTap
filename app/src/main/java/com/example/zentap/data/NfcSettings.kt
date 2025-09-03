@@ -13,13 +13,11 @@ object NfcSettings {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    fun getRegisteredTags(context: Context): Set<String> {
-        return getPrefs(context).getStringSet(MainViewModel.REGISTERED_TAGS_PREFS, emptySet()) ?: emptySet()
+    fun getRegisteredTag(context: Context): String? {
+        return getPrefs(context).getString(MainViewModel.REGISTERED_TAG_PREF, null)
     }
 
-    fun addRegisteredTag(context: Context, tagId: String) {
-        val currentTags = getRegisteredTags(context).toMutableSet()
-        currentTags.add(tagId)
-        getPrefs(context).edit { putStringSet(MainViewModel.REGISTERED_TAGS_PREFS, currentTags) }
+    fun setRegisteredTag(context: Context, tagId: String) {
+        getPrefs(context).edit { putString(MainViewModel.REGISTERED_TAG_PREF, tagId) }
     }
 }

@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.example.zentap.data.NfcSettings
 import com.example.zentap.ui.theme.ZenTapTheme
 
-class RegisterTagActivity : ComponentActivity() {
+class ChangeTagActivity : ComponentActivity() {
 
     private var tagId: String? = null
 
@@ -36,11 +36,11 @@ class RegisterTagActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    RegisterTagScreen(
+                    ChangeTagScreen(
                         onRegisterClick = {
                             tagId?.let {
-                                NfcSettings.addRegisteredTag(this, it)
-                                Toast.makeText(this, "Tag registered successfully!", Toast.LENGTH_SHORT).show()
+                                NfcSettings.setRegisteredTag(this, it)
+                                Toast.makeText(this, "Tag changed successfully!", Toast.LENGTH_SHORT).show()
                                 finish()
                             }
                         },
@@ -59,7 +59,7 @@ class RegisterTagActivity : ComponentActivity() {
 }
 
 @Composable
-fun RegisterTagScreen(onRegisterClick: () -> Unit, onCancelClick: () -> Unit) {
+fun ChangeTagScreen(onRegisterClick: () -> Unit, onCancelClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -68,12 +68,12 @@ fun RegisterTagScreen(onRegisterClick: () -> Unit, onCancelClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Register New Tag",
+            text = "Change Registered Tag",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
         Text(
-            text = "This NFC tag isn't registered. Would you like to add it?",
+            text = "This NFC tag isn't registered. Would you like to make it your new registered tag?",
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(bottom = 32.dp)
         )
