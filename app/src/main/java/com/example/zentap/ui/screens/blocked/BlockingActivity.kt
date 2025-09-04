@@ -1,4 +1,4 @@
-package com.example.zentap
+package com.example.zentap.ui.screens.blocked
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,8 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
-import com.example.zentap.ui.screens.blocked.BlockedFeatureScreen
-import com.example.zentap.ui.screens.blocked.BlockedViewModel
+import com.example.zentap.AppBlockerAccessibilityService
 
 class BlockingActivity : ComponentActivity() {
 

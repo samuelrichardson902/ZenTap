@@ -12,6 +12,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.example.zentap.data.AppSettings
+import com.example.zentap.ui.screens.blocked.BlockingActivity
 
 class AppBlockerAccessibilityService : AccessibilityService() {
 

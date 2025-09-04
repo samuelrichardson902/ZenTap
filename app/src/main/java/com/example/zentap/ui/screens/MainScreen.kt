@@ -28,7 +28,6 @@ import com.example.zentap.ui.screens.home.HomeScreen
 import com.example.zentap.ui.screens.home.AppSelectionScreen
 import com.example.zentap.ui.screens.settings.SettingsScreen
 import androidx.activity.compose.LocalActivity
-
 sealed class Screen(val route: String, val icon: ImageVector, val title: String) {
     object Home : Screen("home", Icons.Default.Home, "Home")
     object Analytics : Screen("analytics", Icons.Outlined.Analytics, "Analytics")

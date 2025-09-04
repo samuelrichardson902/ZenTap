@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.zentap.ChangeTagActivity
 
 @Composable
 fun SettingsScreen() {
@@ -24,11 +23,6 @@ fun SettingsScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Button(onClick = {
-            val intent = Intent(context, ChangeTagActivity::class.java)
-            context.startActivity(intent)
-        }) {
-            Text(text = "Change Registered Tag")
-        }
+        Text(text = "Settings n that")
     }
 }

@@ -1,11 +1,14 @@
-package com.example.zentap
+package com.example.zentap.ui.nfc
 
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import com.example.zentap.data.NfcSettings
+import androidx.core.content.edit
+import com.example.zentap.MainActivity
+import com.example.zentap.MainViewModel
+import com.example.zentap.ui.nfc.NfcSettings
 
 class NfcActivity : ComponentActivity() {
 
@@ -38,9 +41,9 @@ class NfcActivity : ComponentActivity() {
             startActivity(intent)
         } else if (registeredTag == scannedId) {
             // Match → toggle blocked state
-            val prefs = getSharedPreferences(MainViewModel.OVERALL_TOGGLE_PREFS, MODE_PRIVATE)
+            val prefs = getSharedPreferences(MainViewModel.Companion.OVERALL_TOGGLE_PREFS, MODE_PRIVATE)
             val blocked = prefs.getBoolean("is_on", false)
-            prefs.edit().putBoolean("is_on", !blocked).apply()
+            prefs.edit { putBoolean("is_on", !blocked) }
 
             Toast.makeText(
                 this,
@@ -50,7 +53,7 @@ class NfcActivity : ComponentActivity() {
         } else {
             // Mismatch → launch change tag flow
             val intent = Intent(this, ChangeTagActivity::class.java).apply {
-                putExtra(ChangeTagActivity.EXTRA_TAG_ID, scannedId)
+                putExtra(ChangeTagActivity.Companion.EXTRA_TAG_ID, scannedId)
             }
             startActivity(intent)
         }

@@ -29,7 +29,7 @@ class MainViewModel : ViewModel() {
     private val _categorizedApps = MutableStateFlow(CategorizedApps(emptyList(), emptyMap()))
     val categorizedApps = _categorizedApps.asStateFlow()
 
-    private val _isOverallToggleOn = MutableStateFlow(true)
+    private val _isOverallToggleOn = MutableStateFlow(false)
     val isOverallToggleOn = _isOverallToggleOn.asStateFlow()
 
 

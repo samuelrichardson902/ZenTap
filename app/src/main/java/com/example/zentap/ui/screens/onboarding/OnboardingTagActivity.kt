@@ -1,4 +1,4 @@
-package com.example.zentap
+package com.example.zentap.ui.screens.onboarding
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

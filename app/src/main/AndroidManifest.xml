@@ -10,7 +10,6 @@
         <!-- Query for user-installed apps -->
         <intent>
             <action android:name="android.intent.action.MAIN" />
-
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
     </queries>
@@ -22,11 +21,10 @@
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
         <!-- Onboarding Activity -->
         <activity
-            android:name=".OnboardingActivity"
+            android:name=".ui.screens.onboarding.OnboardingActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity> <!-- Main Activity -->
@@ -34,14 +32,14 @@
             android:name=".MainActivity"
             android:exported="false" /> <!-- Blocking Activity -->
         <activity
-            android:name=".BlockingActivity"
+            android:name=".ui.screens.blocked.BlockingActivity"
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" /> <!-- Accessibility Service -->
         <!-- Onboarding Tag Activity -->
         <activity
-            android:name=".OnboardingTagActivity"
+            android:name=".ui.screens.onboarding.OnboardingTagActivity"
             android:exported="false"
             android:launchMode="singleTop"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
@@ -49,12 +47,12 @@
 
         <!-- Change Tag Activity -->
         <activity
-            android:name=".ChangeTagActivity"
+            android:name=".ui.nfc.ChangeTagActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
 
         <activity
-            android:name=".NfcActivity"
+            android:name=".ui.nfc.NfcActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>

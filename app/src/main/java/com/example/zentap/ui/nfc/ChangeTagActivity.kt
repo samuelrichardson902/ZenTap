@@ -1,4 +1,4 @@
-package com.example.zentap
+package com.example.zentap.ui.nfc
 
 import android.os.Bundle
 import android.widget.Toast
@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.zentap.data.NfcSettings
+import com.example.zentap.ui.nfc.NfcSettings
 import com.example.zentap.ui.theme.ZenTapTheme
 
 class ChangeTagActivity : ComponentActivity() {
