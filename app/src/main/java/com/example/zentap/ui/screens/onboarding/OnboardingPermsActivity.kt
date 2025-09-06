@@ -1,5 +1,10 @@
 package com.example.zentap.ui.screens.onboarding
 
+import android.content.Intent
+import android.os.Bundle
+import android.provider.Settings
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,9 +22,31 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.zentap.R
+import com.example.zentap.ui.theme.ZenTapTheme
+
+class OnboardingPermsActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            ZenTapTheme(darkTheme = true) {
+                // The activity hosts the composable screen
+                OnboardingPermsScreen(
+                    onGrantPermission = {
+                        openAccessibilitySettings()
+                    }
+                )
+            }
+        }
+    }
+
+    private fun openAccessibilitySettings() {
+        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+    }
+}
 
 @Composable
 fun OnboardingPermsScreen(

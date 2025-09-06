@@ -90,21 +90,17 @@ fun MainScreen() {
             composable(Screen.Home.route) {
                 HomeScreen(
                     viewModel = activity.viewModel,
-                    navController = navController,
-                    isAccessibilityServiceEnabled = { activity.isAccessibilityServiceEnabled() },
-                    openAccessibilitySettings = { activity.openAccessibilitySettings() }
+                    navController = navController
                 )
             }
             composable("app_selection") {
                 AppSelectionScreen(
                     viewModel = activity.viewModel,
-                    navController = navController,
-                    isAccessibilityServiceEnabled = { activity.isAccessibilityServiceEnabled() },
-                    openAccessibilitySettings = { activity.openAccessibilitySettings() }
+                    navController = navController
                 )
             }
-            composable(Screen.Analytics.route) { AnalyticsScreen() }
-            composable(Screen.Settings.route) { SettingsScreen() }
+            composable(Screen.Analytics.route) { AnalyticsScreen(viewModel = activity.viewModel) }
+            composable(Screen.Settings.route) { SettingsScreen(viewModel = activity.viewModel) }
         }
     }
 }

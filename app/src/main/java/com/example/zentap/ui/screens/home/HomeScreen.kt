@@ -24,8 +24,6 @@ import com.example.zentap.MainViewModel
 fun HomeScreen(
     viewModel: MainViewModel,
     navController: NavController,
-    isAccessibilityServiceEnabled: () -> Boolean,
-    openAccessibilitySettings: () -> Unit
 ) {
     val isOverallToggleOn by viewModel.isOverallToggleOn.collectAsState()
     val context = LocalContext.current

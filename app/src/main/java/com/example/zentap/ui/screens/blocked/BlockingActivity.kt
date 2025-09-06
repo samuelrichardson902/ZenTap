@@ -5,33 +5,49 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
-import androidx.lifecycle.ViewModelProvider
-import com.example.zentap.AppBlockerAccessibilityService
+import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
+import com.example.zentap.data.AppSettings
+import com.example.zentap.data.BlockedMessages
 
 class BlockingActivity : ComponentActivity() {
 
-    private lateinit var viewModel: BlockedViewModel
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        viewModel = ViewModelProvider(this)[BlockedViewModel::class.java]
 
         val blockedPackage = intent.getStringExtra("blocked_package") ?: ""
         val appName = getAppName(blockedPackage)
 
         setContent {
+            var timeLeft by remember { mutableStateOf(AppSettings.getWaitTime(this)) }
+            val blockedMessage = remember { BlockedMessages.getRandomMessage() }
+            var unlocked by remember { mutableStateOf(false) }
+
+            LaunchedEffect(Unit) {
+                while (timeLeft > 0) {
+                    delay(1000)
+                    timeLeft -= 1000
+                }
+                unlocked = true
+            }
+
             BlockedFeatureScreen(
                 appName = appName,
-                viewModel = viewModel,
+                timeLeftFormatted = if (unlocked) "00:00" else formatTime(timeLeft),
+                emoji = blockedMessage.emoji,
+                message = blockedMessage.text,
                 onUnlockApp = {
-                    // When the initial countdown finishes, tell the service to start
-                    // the 1-minute access timer.
                     sendGrantAccessBroadcast(blockedPackage)
-                    finish() // Close the blocking screen
+                    finish()
                 },
-                onClose = { goToHomeScreen() }
+                onClose = { goToHomeScreen() },
+                onRequestAccess = {
+                    // CHANGED: trigger countdown start
+                    timeLeft = AppSettings.getWaitTime(this)
+                    unlocked = false
+                }
             )
+
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -41,21 +57,6 @@ class BlockingActivity : ComponentActivity() {
         })
     }
 
-    override fun onResume() {
-        super.onResume()
-        // Resume the countdown if the user comes back to the screen
-        viewModel.resumeCountdown()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        // Pause the countdown if the user navigates away
-        viewModel.pauseCountdown()
-    }
-
-    /**
-     * Sends a broadcast to the Accessibility Service to grant temporary access.
-     */
     private fun sendGrantAccessBroadcast(packageName: String) {
         if (packageName.isBlank()) return
         val intent = Intent(AppBlockerAccessibilityService.ACTION_GRANT_TEMP_ACCESS).apply {
@@ -75,9 +76,18 @@ class BlockingActivity : ComponentActivity() {
 
     private fun getAppName(packageName: String): String {
         return try {
-            packageManager.getApplicationLabel(packageManager.getApplicationInfo(packageName, 0)).toString()
+            packageManager.getApplicationLabel(
+                packageManager.getApplicationInfo(packageName, 0)
+            ).toString()
         } catch (e: Exception) {
             "This app"
         }
+    }
+
+    // CHANGED: Local helper for formatting time
+    private fun formatTime(millis: Long): String {
+        val minutes = (millis / 1000) / 60
+        val seconds = (millis / 1000) % 60
+        return String.format("%02d:%02d", minutes, seconds)
     }
 }

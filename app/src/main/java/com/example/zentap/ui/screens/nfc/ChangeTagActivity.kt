@@ -1,4 +1,4 @@
-package com.example.zentap.ui.nfc
+package com.example.zentap.ui.screens.nfc
 
 import android.os.Bundle
 import android.widget.Toast
@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.zentap.ui.nfc.NfcSettings
+import com.example.zentap.data.NfcSettings
 import com.example.zentap.ui.theme.ZenTapTheme
 
 class ChangeTagActivity : ComponentActivity() {
@@ -22,7 +22,7 @@ class ChangeTagActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        tagId = intent.getStringExtra(EXTRA_TAG_ID)
+        tagId = intent.getStringExtra(PRESENTED_TAG_ID)
 
         if (tagId == null) {
             // No tag ID passed, so we can't register anything.
@@ -39,9 +39,10 @@ class ChangeTagActivity : ComponentActivity() {
                     ChangeTagScreen(
                         onRegisterClick = {
                             tagId?.let {
-                                NfcSettings.setRegisteredTag(this, it)
-                                Toast.makeText(this, "Tag changed successfully!", Toast.LENGTH_SHORT).show()
-                                finish()
+                                if (NfcSettings.setRegisteredTag(this, it)){
+                                    Toast.makeText(this, "Tag changed successfully!", Toast.LENGTH_SHORT).show()
+                                    finish()
+                                }
                             }
                         },
                         onCancelClick = {
@@ -54,7 +55,7 @@ class ChangeTagActivity : ComponentActivity() {
     }
 
     companion object {
-        const val EXTRA_TAG_ID = "extra_tag_id"
+        const val PRESENTED_TAG_ID = "presented_tag_id"
     }
 }
 
