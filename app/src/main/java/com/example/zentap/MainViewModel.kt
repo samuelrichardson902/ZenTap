@@ -86,7 +86,7 @@ class MainViewModel : ViewModel() {
 
     fun toggleOverallState(isEnabled: Boolean, context: Context) {
         BlockedSettings.setBlockedMode(isEnabled, context)
-        _isOverallToggleOn.value = isEnabled
+        loadOverallState(context)
     }
 
     private val _isOverallToggleOn = MutableStateFlow(false)
@@ -94,6 +94,36 @@ class MainViewModel : ViewModel() {
 
     fun loadOverallState(context: Context) {
         _isOverallToggleOn.value = BlockedSettings.getBlockedMode(context)
+    }
+
+
+    // NFC tags state
+    private val _registeredTags = MutableStateFlow<Map<String, String>>(emptyMap())
+    val registeredTags = _registeredTags.asStateFlow()
+
+    fun loadRegisteredTags(context: Context) {
+        _registeredTags.value = NfcSettings.getRegisteredTags(context)
+    }
+
+    fun registerTag(context: Context, tagId: String): Boolean {
+        val registeredTags = NfcSettings.getRegisteredTags(context)
+        return if (registeredTags.containsKey(tagId)) {
+            false
+        } else {
+            NfcSettings.registerNewTag(context, tagId)
+            loadRegisteredTags(context) // update StateFlow
+            true
+        }
+    }
+
+    fun removeTag(context: Context, tagId: String) {
+        NfcSettings.removeTag(context, tagId)
+        loadRegisteredTags(context)
+    }
+
+    fun renameTag(context: Context, tagId: String, newName: String) {
+        NfcSettings.renameTag(context, tagId, newName)
+        loadRegisteredTags(context)
     }
 
 

@@ -1,5 +1,6 @@
 package com.example.zentap.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Analytics
@@ -28,6 +29,13 @@ import com.example.zentap.ui.screens.home.HomeScreen
 import com.example.zentap.ui.screens.home.AppSelectionScreen
 import com.example.zentap.ui.screens.settings.SettingsScreen
 import androidx.activity.compose.LocalActivity
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.navigation.NavController
+import androidx.navigation.compose.*
+import com.example.zentap.ui.screens.settings.TagManagementScreen
+import kotlinx.coroutines.flow.collectLatest
+
 sealed class Screen(val route: String, val icon: ImageVector, val title: String) {
     object Home : Screen("home", Icons.Default.Home, "Home")
     object Analytics : Screen("analytics", Icons.Outlined.Analytics, "Analytics")
@@ -45,6 +53,16 @@ val items = listOf(
 fun MainScreen() {
     val navController = rememberNavController()
     val activity = LocalActivity.current as MainActivity
+    val viewModel = activity.viewModel
+
+    val isBlockerEnabled by viewModel.isOverallToggleOn.collectAsState()
+    LaunchedEffect(isBlockerEnabled) {
+        if (isBlockerEnabled) {
+            if (navController.currentDestination?.route == "app_selection") {
+                navController.popBackStack(Screen.Home.route, inclusive = false)
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -83,9 +101,9 @@ fun MainScreen() {
         }
     ) { innerPadding ->
         NavHost(
-            navController,
+            navController = navController,
             startDestination = Screen.Home.route,
-            Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
@@ -100,7 +118,18 @@ fun MainScreen() {
                 )
             }
             composable(Screen.Analytics.route) { AnalyticsScreen(viewModel = activity.viewModel) }
-            composable(Screen.Settings.route) { SettingsScreen(viewModel = activity.viewModel) }
+            composable(Screen.Settings.route) {
+                SettingsScreen(
+                    viewModel = activity.viewModel,
+                    navController = navController
+                )
+            }
+            composable("tag_management") {
+                TagManagementScreen(
+                    viewModel = activity.viewModel,
+                    navController = navController
+                )
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.zentap.ui.screens.home
 
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -19,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.zentap.MainViewModel
+import com.example.zentap.util.ToastManager
 
 @Composable
 fun HomeScreen(
@@ -27,7 +27,7 @@ fun HomeScreen(
 ) {
     val isOverallToggleOn by viewModel.isOverallToggleOn.collectAsState()
     val context = LocalContext.current
-    var showDialog by remember { mutableStateOf(false) }
+
 
     Column(
         modifier = Modifier
@@ -40,11 +40,9 @@ fun HomeScreen(
             isBlockerEnabled = isOverallToggleOn,
             onToggle = {
                 val newState = !isOverallToggleOn
-                if (newState && !isAccessibilityServiceEnabled()) {
-                    showDialog = true
-                } else {
-                    viewModel.toggleOverallState(newState, context)
-                }
+                viewModel.toggleOverallState(newState, context)
+                val message = "Blocked mode is now ${if (newState) "ON" else "OFF"}"
+                ToastManager.showToast(context, message)
             }
         )
 
@@ -52,27 +50,10 @@ fun HomeScreen(
             isBlockerEnabled = isOverallToggleOn,
             onClick = {
                 if (isOverallToggleOn) {
-                    Toast.makeText(context, "Cannot change apps while blocker is active", Toast.LENGTH_SHORT).show()
+                    ToastManager.showToast(context, "Cannot change apps while blocker is active")
                 } else {
                     navController.navigate("app_selection")
                 }
-            }
-        )
-    }
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Accessibility Permission Required") },
-            text = { Text("To enable the blocker, this app needs accessibility permission. Please enable it in the settings.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    openAccessibilitySettings()
-                    showDialog = false
-                }) { Text("Go to Settings") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) { Text("Cancel") }
             }
         )
     }
@@ -84,10 +65,18 @@ fun BlockerControlCard(
     isBlockerEnabled: Boolean,
     onToggle: () -> Unit
 ) {
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onToggle),
+            .clickable(onClick = {
+                if (isBlockerEnabled) {
+                    ToastManager.showToast(context, "Blocked mode must be disabled using the NFC tag.")
+                } else {
+                    onToggle()
+                }
+            }),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(

@@ -16,6 +16,6 @@ fun AnalyticsScreen(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "Analytics Screen")
+        Text(text = "Analytics Coming Soon")
     }
 }

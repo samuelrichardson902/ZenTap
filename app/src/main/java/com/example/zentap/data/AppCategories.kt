@@ -1,5 +1,15 @@
 package com.example.zentap.data
 
+val categoryOrder = listOf(
+    "Blocked Apps",
+    "Social Media",
+    "Streaming & Entertainment",
+    "AI / Assistants",
+    "Dating Apps",
+    "Shopping",
+    "Other"
+)
+
 val targetPackageNames: Map<String, String> = mapOf(
     // --- Social Media ---
     "com.instagram.android" to "Social Media",
