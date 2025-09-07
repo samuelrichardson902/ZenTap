@@ -1,4 +1,4 @@
-package com.example.zentap
+package com.example.zentap.ui.screens.blocked
 
 import android.accessibilityservice.AccessibilityService
 import android.app.PendingIntent
@@ -11,7 +11,10 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import androidx.core.content.edit
 import com.example.zentap.data.AppSettings
+import com.example.zentap.data.BlockedSettings
+
 
 class AppBlockerAccessibilityService : AccessibilityService() {
 
@@ -32,19 +35,29 @@ class AppBlockerAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         // Register the temporary access receiver when the service connects
-        registerReceiver(temporaryAccessReceiver, IntentFilter(ACTION_GRANT_TEMP_ACCESS), RECEIVER_EXPORTED)
+        registerReceiver(temporaryAccessReceiver,
+            IntentFilter(ACTION_GRANT_TEMP_ACCESS), RECEIVER_EXPORTED)
         Log.d(TAG, "Accessibility Service connected.")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        //skip if not changine window, blank package name, or this app
         if (event?.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val packageName = event.packageName?.toString() ?: return
         if (packageName == this.packageName || packageName == getLauncherPackageName()) return
 
+
         // The core logic: check overall toggle first, then individual app settings.
-        if (isOverallToggleOn() && shouldBlockApp(packageName)) {
-            showBlockingScreen(packageName)
+        if (BlockedSettings.getBlockedMode(this) && BlockedSettings.getAppBlockedState(packageName, this)) {
+            if (!tempUnlock(packageName)) {
+                showBlockingScreen(packageName)
+            }
         }
+    }
+
+    private fun tempUnlock(packageName: String): Boolean {
+        val expirationTime = BlockedSettings.getTempUnlockExpiration(packageName, this)
+        return System.currentTimeMillis() < expirationTime // still unlocked if current < expiration
     }
 
     override fun onDestroy() {
@@ -55,36 +68,16 @@ class AppBlockerAccessibilityService : AccessibilityService() {
         Log.d(TAG, "Accessibility Service destroyed.")
     }
 
-    private fun shouldBlockApp(packageName: String): Boolean {
-        // First, check for temporary unlock
-        val tempPrefs = getSharedPreferences(PREFS_TEMP_UNLOCK, Context.MODE_PRIVATE)
-        val expirationTime = tempPrefs.getLong(packageName, 0)
-        if (System.currentTimeMillis() < expirationTime) {
-            return false
-        }
-        // Then, check the individual app's blocking state
-        val blockedPrefs = getSharedPreferences(MainViewModel.BLOCKED_APPS_PREFS, Context.MODE_PRIVATE)
-        return blockedPrefs.getBoolean(packageName, false)
-    }
 
-    private fun isOverallToggleOn(): Boolean {
-        val prefs = getSharedPreferences(MainViewModel.OVERALL_TOGGLE_PREFS, Context.MODE_PRIVATE)
-        return prefs.getBoolean("is_on", true)
-    }
 
-    // This function is intended to be called from a UI component to change the state
-    fun setOverallToggleState(isEnabled: Boolean) {
-        val prefs = getSharedPreferences(MainViewModel.OVERALL_TOGGLE_PREFS, Context.MODE_PRIVATE)
-        prefs.edit().putBoolean("is_on", isEnabled).apply()
-        Log.d(TAG, "Overall toggle state set to: $isEnabled")
-    }
 
     private fun grantTemporaryAccess(packageName: String) {
         Log.d(TAG, "Granting temporary access to $packageName")
         val unlockTime = AppSettings.getUnlockTime(this)
-        val prefs = getSharedPreferences(PREFS_TEMP_UNLOCK, MODE_PRIVATE)
         val expirationTime = System.currentTimeMillis() + unlockTime
-        prefs.edit().putLong(packageName, expirationTime).apply()
+
+        BlockedSettings.setTempUnlockExpiration(packageName, expirationTime, this)
+
         reblockRunnableMap[packageName]?.let { handler.removeCallbacks(it) }
 
         val reblockRunnable = Runnable {

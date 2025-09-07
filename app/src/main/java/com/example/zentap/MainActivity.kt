@@ -1,58 +1,48 @@
 package com.example.zentap
 
 import android.accessibilityservice.AccessibilityServiceInfo
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
-import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
-import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import com.example.zentap.data.NfcSettings
 import com.example.zentap.ui.screens.MainScreen
+import com.example.zentap.ui.screens.onboarding.OnboardingPermsActivity
+import com.example.zentap.ui.screens.onboarding.OnboardingTagActivity
 import com.example.zentap.ui.theme.ZenTapTheme
+import androidx.activity.result.contract.ActivityResultContracts
 
-class MainActivity : ComponentActivity() {
+class MainActivity : BaseActivity() {
 
     val viewModel: MainViewModel by viewModels()
-    private var packageReceiver: BroadcastReceiver? = null
+
+
+    // Register a launcher for the OnboardingPermsActivity
+    private val accessibilityPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        // This callback is triggered when the user returns from OnboardingPermsActivity
+        // We can re-check the permission status here
+        if (isAccessibilityServiceEnabled()) {
+            // Permission is granted, now check for the NFC tag
+            if (!hasRegisteredTags(this)) {
+                // Redirect to the tag onboarding screen
+                val intent = Intent(this, OnboardingTagActivity::class.java)
+                startActivity(intent)
+            } else {
+                // All permissions and settings are good, load the apps
+                viewModel.loadAndSortApps(packageManager, this)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Register receiver for app install/uninstall events
-        packageReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action == Intent.ACTION_PACKAGE_ADDED ||
-                    intent?.action == Intent.ACTION_PACKAGE_REMOVED
-                ) {
-                    context?.let {
-                        viewModel.loadAndSortApps(it.packageManager, it, forceReload = true)
-                    }
-                }
-            }
-        }
-
-        val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addDataScheme("package")
-        }
-        registerReceiver(packageReceiver, filter)
-
         setContent {
-            ZenTapTheme(darkTheme = true) {
+            ZenTapTheme {
                 MainScreen()
             }
         }
@@ -60,16 +50,32 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        val pm = packageManager
+
+        viewModel.loadOverallState(this)
+
+
+        // Check for accessibility service
+        if (!isAccessibilityServiceEnabled()) {
+            // Redirect to the accessibility onboarding screen
+            val intent = Intent(this, OnboardingPermsActivity::class.java)
+            accessibilityPermissionLauncher.launch(intent)
+            return
+        }
+
+        // Check for registered NFC tag
+        if (!hasRegisteredTags(this)) {
+            startActivity(Intent(this, OnboardingTagActivity::class.java))
+            return
+        }
+
         // Uses caching in ViewModel (won’t reload if already loaded)
-        viewModel.loadAndSortApps(pm, this)
+        viewModel.loadAndSortApps(packageManager, this)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        packageReceiver?.let { unregisterReceiver(it) }
-        packageReceiver = null
+    override fun onPause() {
+        super.onPause()
     }
+
 
     fun isAccessibilityServiceEnabled(): Boolean {
         val accessibilityManager =
@@ -79,7 +85,7 @@ class MainActivity : ComponentActivity() {
         return enabledServices.any { it.resolveInfo.serviceInfo.packageName == packageName }
     }
 
-    fun openAccessibilitySettings() {
-        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+    fun hasRegisteredTags(context: Context): Boolean {
+        return NfcSettings.getRegisteredTags(context).isNotEmpty()
     }
 }

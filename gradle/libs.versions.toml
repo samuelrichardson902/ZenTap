@@ -1,4 +1,5 @@
 [versions]
+accompanistSystemuicontroller = "0.37.3"
 agp = "8.12.1"
 kotlin = "2.0.21"
 coreKtx = "1.17.0"
@@ -17,10 +18,13 @@ compose-compiler = "1.5.21"
 lifecycleRuntimeKtx = "2.9.3"
 lifecycleViewmodelCompose = "2.9.3"
 runtime = "1.9.0"
-accompanistDrawablePainter = "0.37.3"
+accompanist = "0.37.3"
 coilCompose = "2.7.0"
+gson = "2.10.1"
 
 [libraries]
+accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanist" }
+
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
@@ -43,15 +47,14 @@ androidx-material-icons-extended = { group = "androidx.compose.material", name =
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 # Test libraries
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 
-# Extra libraries
-accompanist-drawablepainter = { group = "com.google.accompanist", name = "accompanist-drawablepainter", version.ref = "accompanistDrawablePainter" }
-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -8,10 +8,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color // Import Color if needed for specific overrides
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 
@@ -27,13 +26,19 @@ fun AppItem(
     onToggle: (Boolean) -> Unit,
 ) {
     val context = LocalContext.current
+    val colors = MaterialTheme.colorScheme
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colors.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
     ) {
         Row(
             modifier = Modifier
@@ -41,7 +46,7 @@ fun AppItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Replace AsyncImage with AndroidView to load the app icon
+            // App icon loaded via AndroidView
             AndroidView(
                 factory = { ctx ->
                     ImageView(ctx).apply {
@@ -62,28 +67,35 @@ fun AppItem(
                 modifier = Modifier.size(48.dp)
             )
 
+            Spacer(modifier = Modifier.width(16.dp))
+
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 16.dp)
             ) {
                 Text(
                     text = app.name,
-                    fontSize = 16.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    color = Color(0xFF333333)
-                )
-                Text(
-                    text = app.packageName,
-                    fontSize = 12.sp,
-                    color = Color(0xFF666666),
-                    modifier = Modifier.padding(top = 4.dp)
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.onSurface
                 )
             }
 
             Switch(
                 checked = app.blocked,
-                onCheckedChange = { onToggle(it) }
+                onCheckedChange = { onToggle(it) },
+                colors = SwitchDefaults.colors(
+                    // --- MODIFICATION START ---
+                    // Use onPrimary for the thumb when checked, so it contrasts with the primary track color.
+                    checkedThumbColor = colors.onPrimary,
+                    checkedTrackColor = colors.primary,
+                    checkedBorderColor = colors.primary,
+
+                    // Define unchecked colors for consistency
+                    uncheckedThumbColor = colors.onSurfaceVariant,
+                    uncheckedTrackColor = colors.surfaceVariant, // or colors.surfaceContainerHighest
+                    uncheckedBorderColor = colors.outline
+                    // --- MODIFICATION END ---
+                )
             )
         }
     }

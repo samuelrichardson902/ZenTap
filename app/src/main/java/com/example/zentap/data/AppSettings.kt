@@ -2,20 +2,14 @@ package com.example.zentap.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
-/**
- * A singleton object to manage application settings.
- *
- * This provides a central place to get and set configurable values,
- * such as timer durations, which are persisted in SharedPreferences.
- */
 object AppSettings {
 
     private const val PREFS_NAME = "app_settings"
     private const val KEY_WAIT_TIME = "key_wait_time_millis"
     private const val KEY_UNLOCK_TIME = "key_unlock_time_millis"
 
-    // Default values: 60 seconds for both
     private const val DEFAULT_WAIT_TIME = 30_000L
     private const val DEFAULT_UNLOCK_TIME = 60_000L
 
@@ -30,7 +24,7 @@ object AppSettings {
     }
 
     fun setWaitTime(context: Context, timeInMillis: Long) {
-        getPrefs(context).edit().putLong(KEY_WAIT_TIME, timeInMillis).apply()
+        getPrefs(context).edit { putLong(KEY_WAIT_TIME, timeInMillis) }
     }
 
     // --- Unlock Time (App Access) ---
@@ -40,6 +34,6 @@ object AppSettings {
     }
 
     fun setUnlockTime(context: Context, timeInMillis: Long) {
-        getPrefs(context).edit().putLong(KEY_UNLOCK_TIME, timeInMillis).apply()
+        getPrefs(context).edit { putLong(KEY_UNLOCK_TIME, timeInMillis) }
     }
 }

@@ -74,11 +74,13 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
 
-    // Accompanist (keep version inline for now)
-    implementation("com.google.accompanist:accompanist-drawablepainter:0.37.3")
+
+    implementation(libs.accompanist.drawablepainter)
+    implementation(libs.gson)
+
 
     // Coil
-    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation(libs.coil.compose)
 
     // Tests
     testImplementation(libs.junit)

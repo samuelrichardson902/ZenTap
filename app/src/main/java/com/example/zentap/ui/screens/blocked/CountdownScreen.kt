@@ -14,7 +14,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun CountdownScreen(timeLeft: String) {
+fun CountdownScreen(
+    timeLeft: String,      // same as before
+    appName: String? = null   // OPTIONAL: could display which app is being unlocked
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -24,7 +27,7 @@ fun CountdownScreen(timeLeft: String) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Unlocking in...",
+            text = "Unlocking${if (appName != null) " $appName" else ""} in...", // CHANGED
             fontSize = 24.sp,
             color = Color(0xFFCCCCCC),
             modifier = Modifier.padding(bottom = 16.dp)
@@ -48,5 +51,5 @@ fun CountdownScreen(timeLeft: String) {
 @Preview
 @Composable
 fun CountdownScreenPreview() {
-    CountdownScreen(timeLeft = "00:42")
+    CountdownScreen(timeLeft = "00:42", appName = "Instagram")
 }

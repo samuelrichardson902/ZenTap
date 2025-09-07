@@ -4,24 +4,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.zentap.R
-import com.example.zentap.data.BlockedMessage
 
+// --- CHANGED: BlockedMessage removed, now we just pass plain strings ---
 @Composable
 fun BlockedScreen(
     appName: String,
-    blockedMessage: BlockedMessage,
+    emoji: String,        // CHANGED
+    message: String,      // CHANGED
     onClose: () -> Unit,
     onRequestAccess: () -> Unit
 ) {
@@ -34,22 +32,18 @@ fun BlockedScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = blockedMessage.emoji,
+            text = emoji,   // CHANGED
             fontSize = 100.sp,
             modifier = Modifier.padding(bottom = 32.dp)
         )
-        // --- START OF CHANGE ---
-        // The message text is now formatted with the app's name.
         Text(
-            text = blockedMessage.text.format(appName),
+            text = message.format(appName),  // CHANGED
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 32.dp) // Increased padding
+            modifier = Modifier.padding(bottom = 32.dp)
         )
-        // The redundant text showing the app name has been removed.
-        // --- END OF CHANGE ---
 
         Row(
             modifier = Modifier.fillMaxWidth(),
