@@ -17,6 +17,18 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.Zentap">
+        <property
+            android:name="android.app.PROPERTY_DATA_SAFETY_ACCOUNT_TYPE"
+            android:value="none" />
+        <property
+            android:name="android.app.PROPERTY_DATA_SAFETY_DATA_COLLECTION"
+            android:value="none" />
+        <property
+            android:name="android.app.PROPERTY_DATA_SAFETY_DATA_SHARING"
+            android:value="none" />
+        <property
+            android:name="android.app.PROPERTY_DATA_SAFETY_DATA_DELETION"
+            android:value="none" />
         <receiver
             android:name=".util.ScheduleAlarmReceiver"
             android:enabled="true"

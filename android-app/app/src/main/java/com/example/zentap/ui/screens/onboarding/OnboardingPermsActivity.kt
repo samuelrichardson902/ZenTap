@@ -33,6 +33,7 @@ import com.example.zentap.BaseActivity
 import com.example.zentap.R
 import com.example.zentap.ui.screens.privacy.PrivacyPolicyActivity
 import com.example.zentap.ui.theme.ZenTapTheme
+import android.content.Context
 
 class OnboardingPermsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,33 +78,24 @@ fun OnboardingPermsScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Permissions Required for Zentap",
+            text = "Enable Zentap's Core Service",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         val annotatedString = buildAnnotatedString {
-            append("To help you focus and block distracting apps, Zentap needs the following permissions:\n\n")
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("• Accessibility Service:")
+                append("To block apps, Zentap needs you to enable its Accessibility Service.\n\n")
             }
-            append(" To monitor the app you are currently using, so we can show the blocking screen at the right time.\n")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("• Query All Packages:")
+            append("The Accessibility Service allows Zentap to see which app is currently on your screen. This is necessary to know when to show the blocking screen over a blocked app.\n\n")
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)) {
+                append("Zentap does not collect, store, or share any personal data from this service.\n\n")
             }
-            append(" To get a list of all your installed apps, so you can choose which ones to block.\n")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("• Display Over Other Apps:")
-            }
-            append(" To show the blocking screen on top of the apps you have chosen to block.\n")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                append("• Alarms & Reminders:")
-            }
-            append(" To schedule automatic blocking sessions.\n\n")
-            append("We take your privacy seriously. All data is stored locally on your device and is never shared. For more details, please review our ")
+            append("For full functionality, other permissions will be requested later as needed. For more details, please review our ")
             pushStringAnnotation(tag = "PrivacyPolicy", annotation = "PrivacyPolicy")
             withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)) {
                 append("Privacy Policy")
@@ -136,7 +128,7 @@ fun OnboardingPermsScreen(
                 .fillMaxWidth()
                 .padding(bottom = 32.dp)
         ) {
-            Text("Agree & Continue", fontSize = 16.sp)
+            Text("Grant Permission", fontSize = 16.sp)
         }
     }
 }
