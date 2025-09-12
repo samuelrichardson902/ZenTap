@@ -1,38 +1,45 @@
 package com.example.zentap
 
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.accessibility.AccessibilityManager
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import com.example.zentap.data.NfcSettings
 import com.example.zentap.ui.screens.MainScreen
+import com.example.zentap.ui.screens.blocked.AppBlockerAccessibilityService
 import com.example.zentap.ui.screens.onboarding.OnboardingPermsActivity
 import com.example.zentap.ui.screens.onboarding.OnboardingTagActivity
 import com.example.zentap.ui.theme.ZenTapTheme
-import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : BaseActivity() {
 
     val viewModel: MainViewModel by viewModels()
 
+    // --- THIS IS THE FIX ---
+    // A receiver that listens for the signal from the service.
+    private val blockerStateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            // When the signal is received, immediately reload the blocker state.
+            if (intent?.action == AppBlockerAccessibilityService.ACTION_BLOCKER_STATE_CHANGED) {
+                viewModel.loadOverallState(this@MainActivity)
+            }
+        }
+    }
 
-    // Register a launcher for the OnboardingPermsActivity
     private val accessibilityPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        // This callback is triggered when the user returns from OnboardingPermsActivity
-        // We can re-check the permission status here
         if (isAccessibilityServiceEnabled()) {
-            // Permission is granted, now check for the NFC tag
             if (!hasRegisteredTags(this)) {
-                // Redirect to the tag onboarding screen
                 val intent = Intent(this, OnboardingTagActivity::class.java)
                 startActivity(intent)
             } else {
-                // All permissions and settings are good, load the apps
                 viewModel.loadAndSortApps(packageManager, this)
             }
         }
@@ -40,7 +47,6 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             ZenTapTheme {
                 MainScreen()
@@ -51,31 +57,32 @@ class MainActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
 
+        // Register the receiver to start listening.
+        registerReceiver(blockerStateReceiver, IntentFilter(AppBlockerAccessibilityService.ACTION_BLOCKER_STATE_CHANGED), RECEIVER_EXPORTED)
+
         viewModel.loadOverallState(this)
+        viewModel.loadBlockingModeType(this)
+        viewModel.refreshCountdown(this)
 
-
-        // Check for accessibility service
         if (!isAccessibilityServiceEnabled()) {
-            // Redirect to the accessibility onboarding screen
             val intent = Intent(this, OnboardingPermsActivity::class.java)
             accessibilityPermissionLauncher.launch(intent)
             return
         }
 
-        // Check for registered NFC tag
         if (!hasRegisteredTags(this)) {
             startActivity(Intent(this, OnboardingTagActivity::class.java))
             return
         }
 
-        // Uses caching in ViewModel (won’t reload if already loaded)
         viewModel.loadAndSortApps(packageManager, this)
     }
 
     override fun onPause() {
         super.onPause()
+        // Unregister the receiver to prevent memory leaks.
+        unregisterReceiver(blockerStateReceiver)
     }
-
 
     fun isAccessibilityServiceEnabled(): Boolean {
         val accessibilityManager =

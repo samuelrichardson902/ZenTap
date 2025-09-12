@@ -33,19 +33,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
+import com.example.zentap.ui.screens.schedule.ScheduleScreen
 import com.example.zentap.ui.screens.settings.TagManagementScreen
 import kotlinx.coroutines.flow.collectLatest
 
 sealed class Screen(val route: String, val icon: ImageVector, val title: String) {
     object Home : Screen("home", Icons.Default.Home, "Home")
-    object Analytics : Screen("analytics", Icons.Outlined.Analytics, "Analytics")
-    object Settings : Screen("settings", Icons.Default.Settings, "Settings")
 }
 
 val items = listOf(
     Screen.Home,
-    Screen.Analytics,
-    Screen.Settings,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,6 +62,9 @@ fun MainScreen() {
     }
 
     Scaffold(
+        // The entire bottomBar section is now commented out.
+        // To add it back later, just remove the /* and */ comment markers.
+        /*
         bottomBar = {
             NavigationBar {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -99,10 +99,12 @@ fun MainScreen() {
                 }
             }
         }
+        */
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
+            // This padding will now adjust to the absence of the bottom bar.
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
@@ -117,8 +119,9 @@ fun MainScreen() {
                     navController = navController
                 )
             }
-            composable(Screen.Analytics.route) { AnalyticsScreen(viewModel = activity.viewModel) }
-            composable(Screen.Settings.route) {
+
+            composable("analytics_screen") { AnalyticsScreen(viewModel = activity.viewModel) }
+            composable("settings_screen") {
                 SettingsScreen(
                     viewModel = activity.viewModel,
                     navController = navController
@@ -129,6 +132,10 @@ fun MainScreen() {
                     viewModel = activity.viewModel,
                     navController = navController
                 )
+            }
+            composable("schedule_screen") {
+                ScheduleScreen(viewModel = viewModel,
+                    navController = navController)
             }
         }
     }

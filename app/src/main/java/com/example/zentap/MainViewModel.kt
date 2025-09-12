@@ -1,18 +1,27 @@
 package com.example.zentap
 
+import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.zentap.data.BlockedSettings
 import com.example.zentap.data.NfcSettings
+import com.example.zentap.data.targetPackageNames
+import com.example.zentap.ui.screens.blocked.AppBlockerAccessibilityService
+import com.example.zentap.util.ToastManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import com.example.zentap.data.targetPackageNames
+import com.example.zentap.data.Schedule
+import com.example.zentap.data.ScheduleSettings
+import com.example.zentap.util.ScheduleManager
 
 data class AppInfo(
     val name: String,
@@ -26,11 +35,31 @@ data class CategorizedApps(
     val categories: Map<String, List<AppInfo>>
 )
 
-class MainViewModel : ViewModel() {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _categorizedApps = MutableStateFlow(CategorizedApps(emptyList(), emptyMap()))
     val categorizedApps = _categorizedApps.asStateFlow()
+    private var strictModeActivationJob: Job? = null
 
+    private val _strictModeTimeLeft = MutableStateFlow(0L)
+    val strictModeTimeLeft = _strictModeTimeLeft.asStateFlow()
+
+    init {
+        viewModelScope.launch(Dispatchers.Default) {
+            while (true) {
+                val expiration = BlockedSettings.getStrictUnlockExpiration(getApplication())
+                val currentTime = System.currentTimeMillis()
+                val timeLeftMillis = expiration - currentTime
+
+                if (timeLeftMillis > 0) {
+                    _strictModeTimeLeft.value = timeLeftMillis / 1000
+                } else {
+                    _strictModeTimeLeft.value = 0L
+                }
+                delay(1000)
+            }
+        }
+    }
 
     fun loadAndSortApps(pm: PackageManager, context: Context, forceReload: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -40,14 +69,11 @@ class MainViewModel : ViewModel() {
                 return@launch
             }
 
-
             val loadedApps = getInstalledApps(pm, context)
             val categorized = categorizeAndSortApps(loadedApps)
             _categorizedApps.update { categorized }
         }
     }
-
-
 
     private fun getInstalledApps(pm: PackageManager, context: Context): List<AppInfo> {
         val apps = mutableListOf<AppInfo>()
@@ -66,8 +92,6 @@ class MainViewModel : ViewModel() {
         return apps
     }
 
-
-
     private fun categorizeAndSortApps(apps: List<AppInfo>): CategorizedApps {
         val blockedApps = apps.filter { it.isBlocked }
         val nonBlockedApps = apps.filter { !it.isBlocked }
@@ -78,7 +102,6 @@ class MainViewModel : ViewModel() {
         return CategorizedApps(blockedApps, categories)
     }
 
-
     fun toggleAppBlocking(app: AppInfo, isBlocked: Boolean, context: Context) {
         BlockedSettings.setAppBlockingState(app.packageName, isBlocked, context)
         loadAndSortApps(context.packageManager, context, forceReload = true)
@@ -87,6 +110,9 @@ class MainViewModel : ViewModel() {
     fun toggleOverallState(isEnabled: Boolean, context: Context) {
         BlockedSettings.setBlockedMode(isEnabled, context)
         loadOverallState(context)
+        if (isEnabled) {
+            context.sendBroadcast(Intent(AppBlockerAccessibilityService.ACTION_CANCEL_REBLOCK))
+        }
     }
 
     private val _isOverallToggleOn = MutableStateFlow(false)
@@ -96,8 +122,65 @@ class MainViewModel : ViewModel() {
         _isOverallToggleOn.value = BlockedSettings.getBlockedMode(context)
     }
 
+    private val _blockingModeType = MutableStateFlow("Normal")
+    val blockingModeType = _blockingModeType.asStateFlow()
 
-    // NFC tags state
+    fun loadBlockingModeType(context: Context) {
+        _blockingModeType.value = BlockedSettings.getBlockingModeType(context)
+    }
+
+    fun toggleBlockingModeType(context: Context) {
+        strictModeActivationJob?.cancel()
+
+        val currentMode = _blockingModeType.value
+        val newMode = if (currentMode == "Normal") "Strict" else "Normal"
+        BlockedSettings.setBlockingModeType(newMode, context)
+        loadBlockingModeType(context)
+
+        if (newMode == "Strict") {
+            // BUG FIX 1: Clear any previous unlock timer to prevent incorrect countdown display.
+            BlockedSettings.setStrictUnlockExpiration(0L, context)
+
+            ToastManager.showToast(context, "Strict Mode on. Blocker activating in 15 seconds.")
+            strictModeActivationJob = viewModelScope.launch {
+                delay(15000)
+                if (BlockedSettings.getBlockingModeType(context) == "Strict") {
+                    toggleOverallState(true, context)
+                }
+            }
+        } else {
+            context.sendBroadcast(Intent(AppBlockerAccessibilityService.ACTION_CANCEL_REBLOCK))
+        }
+    }
+
+    private val _strictUnlockDurationMinutes = MutableStateFlow(15)
+    val strictUnlockDurationMinutes = _strictUnlockDurationMinutes.asStateFlow()
+
+    fun loadStrictUnlockDuration(context: Context) {
+        val durationMs = BlockedSettings.getStrictUnlockDuration(context)
+        _strictUnlockDurationMinutes.value = (durationMs / 60000).toInt()
+    }
+
+    fun setStrictUnlockDuration(durationMinutes: Int, context: Context) {
+        val minutes = if (durationMinutes < 0) 0 else durationMinutes
+        _strictUnlockDurationMinutes.value = minutes
+        val durationMs = minutes * 60000L
+        BlockedSettings.setStrictUnlockDuration(durationMs, context)
+    }
+
+    // BUG FIX 2: New function to manually refresh the countdown state.
+    fun refreshCountdown(context: Context) {
+        val expiration = BlockedSettings.getStrictUnlockExpiration(context)
+        val currentTime = System.currentTimeMillis()
+        val timeLeftMillis = expiration - currentTime
+
+        _strictModeTimeLeft.value = if (timeLeftMillis > 0) {
+            timeLeftMillis / 1000
+        } else {
+            0L
+        }
+    }
+
     private val _registeredTags = MutableStateFlow<Map<String, String>>(emptyMap())
     val registeredTags = _registeredTags.asStateFlow()
 
@@ -111,7 +194,7 @@ class MainViewModel : ViewModel() {
             false
         } else {
             NfcSettings.registerNewTag(context, tagId)
-            loadRegisteredTags(context) // update StateFlow
+            loadRegisteredTags(context)
             true
         }
     }
@@ -124,6 +207,54 @@ class MainViewModel : ViewModel() {
     fun renameTag(context: Context, tagId: String, newName: String) {
         NfcSettings.renameTag(context, tagId, newName)
         loadRegisteredTags(context)
+    }
+
+    private val _schedules = MutableStateFlow<List<Schedule>>(emptyList())
+    val schedules = _schedules.asStateFlow()
+
+    fun loadSchedules(context: Context) {
+        _schedules.value = ScheduleSettings.getSchedules(context)
+    }
+
+    fun addSchedule(context: Context, schedule: Schedule) {
+        val currentSchedules = _schedules.value.toMutableList()
+        currentSchedules.add(schedule)
+        ScheduleSettings.saveSchedules(context, currentSchedules)
+        if (schedule.isEnabled) {
+            ScheduleManager.setSchedule(context, schedule)
+        }
+        loadSchedules(context)
+    }
+
+    fun updateSchedule(context: Context, schedule: Schedule) {
+        val currentSchedules = _schedules.value.toMutableList()
+        val index = currentSchedules.indexOfFirst { it.id == schedule.id }
+        if (index != -1) {
+            val oldSchedule = currentSchedules[index]
+            currentSchedules[index] = schedule
+            ScheduleSettings.saveSchedules(context, currentSchedules)
+
+            // Cancel the old alarm and set a new one if enabled
+            ScheduleManager.cancelSchedule(context, oldSchedule)
+            if (schedule.isEnabled) {
+                ScheduleManager.setSchedule(context, schedule)
+            }
+            loadSchedules(context)
+        }
+    }
+
+    fun removeSchedule(context: Context, schedule: Schedule) {
+        val currentSchedules = _schedules.value.toMutableList()
+        if (currentSchedules.remove(schedule)) {
+            ScheduleSettings.saveSchedules(context, currentSchedules)
+            ScheduleManager.cancelSchedule(context, schedule) // Always cancel when removing
+            loadSchedules(context)
+        }
+    }
+
+    fun toggleSchedule(context: Context, schedule: Schedule, isEnabled: Boolean) {
+        val updatedSchedule = schedule.copy(isEnabled = isEnabled)
+        updateSchedule(context, updatedSchedule)
     }
 
 

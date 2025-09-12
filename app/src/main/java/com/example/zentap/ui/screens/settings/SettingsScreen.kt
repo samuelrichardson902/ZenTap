@@ -1,41 +1,23 @@
 package com.example.zentap.ui.screens.settings
 
 import android.content.Context
-import android.content.Intent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PhonelinkSetup
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -50,6 +32,14 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val isBlockedMode by viewModel.isOverallToggleOn.collectAsState()
+    val blockingModeType by viewModel.blockingModeType.collectAsState()
+    val strictUnlockDuration by viewModel.strictUnlockDurationMinutes.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadOverallState(context)
+        viewModel.loadBlockingModeType(context)
+        viewModel.loadStrictUnlockDuration(context)
+    }
 
     Column(
         modifier = Modifier
@@ -58,7 +48,6 @@ fun SettingsScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Info Card
         Card(elevation = CardDefaults.cardElevation(2.dp)) {
             Text(
                 text = "To change your registered NFC tag, simply scan a new tag with your phone while the app is open.",
@@ -68,20 +57,170 @@ fun SettingsScreen(
             )
         }
 
-        // Break Glass
         var showBreakGlassDialog by remember { mutableStateOf(false) }
         BreakGlassCard(onClick = { showBreakGlassDialog = true })
         if (showBreakGlassDialog) {
             BreakGlassDialog(viewModel = viewModel, onDismiss = { showBreakGlassDialog = false })
         }
 
+        BlockingModeCard(
+            currentMode = blockingModeType,
+            isBlockedMode = isBlockedMode,
+            onClick = { viewModel.toggleBlockingModeType(context) }
+        )
 
-        // Tag Management Card
+        // --- NEW: Conditionally shown card for strict mode duration ---
+        if (blockingModeType == "Strict") {
+            StrictDurationCard(
+                durationMinutes = strictUnlockDuration,
+                isBlockedMode = isBlockedMode,
+                onDurationChange = { newDuration ->
+                    val duration = newDuration.toIntOrNull() ?: 0
+                    viewModel.setStrictUnlockDuration(duration, context)
+                }
+            )
+        }
+
         TagManagementCard(
             navController = navController,
             isBlockedMode = isBlockedMode
         )
     }
+}
+
+// --- NEW CARD COMPOSABLE ---
+@Composable
+fun StrictDurationCard(
+    durationMinutes: Int,
+    isBlockedMode: Boolean,
+    onDurationChange: (String) -> Unit
+) {
+    val alpha = if (isBlockedMode) 0.5f else 1f
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(alpha),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text("Unlock Duration:", modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+            OutlinedTextField(
+                value = if (durationMinutes > 0) durationMinutes.toString() else "",
+                onValueChange = onDurationChange,
+                modifier = Modifier.width(120.dp),
+                label = { Text("Minutes") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                enabled = !isBlockedMode
+            )
+        }
+    }
+}
+
+@Composable
+fun BlockingModeCard(
+    currentMode: String,
+    isBlockedMode: Boolean,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+    var showInfoDialog by remember { mutableStateOf(false) }
+
+    val alpha = if (isBlockedMode) 0.5f else 1f
+    val icon = if (currentMode == "Strict") Icons.Default.Shield else Icons.Default.GppGood
+    val text = if (currentMode == "Strict") "Strict Mode" else "Normal Mode"
+    val description = if (currentMode == "Strict") "Temporary, timed unlocks." else "Standard on/off toggle."
+
+    if (showInfoDialog) {
+        BlockingModeInfoDialog(onDismiss = { showInfoDialog = false })
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(alpha)
+            .clickable(enabled = !isBlockedMode) {
+                if (isBlockedMode) {
+                    ToastManager.showToast(context, "Cannot change mode while blocking is active")
+                } else {
+                    onClick()
+                }
+            },
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 16.dp, bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = "Blocking Mode Icon",
+                modifier = Modifier.size(40.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.size(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = text,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            IconButton(onClick = { showInfoDialog = true }) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "More info about blocking modes"
+                )
+            }
+        }
+    }
+}
+
+// ... (The rest of your SettingsScreen.kt file remains the same)
+// BlockingModeInfoDialog, TagManagementCard, BreakGlassCard, etc.
+
+// --- NEW DIALOG COMPOSABLE ---
+@Composable
+fun BlockingModeInfoDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Blocking Modes Explained") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Normal Mode: ")
+                        }
+                        append("The blocking mode is a simple toggle that you can turn on or off manually.")
+                    }
+                )
+                Text(
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("Strict Mode: ")
+                        }
+                        append("Disabling the blocker is temporary. It will automatically re-enable after a set period.")
+                    }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Got it")
+            }
+        }
+    )
 }
 
 @Composable
@@ -157,8 +296,6 @@ fun BreakGlassDialog(
 ) {
     val context = LocalContext.current
 
-    // Generate a 6-character random string for the challenge.
-    // 'remember' ensures it doesn't change on recomposition unless the dialog is fully dismissed and recreated.
     val challengeString by remember { mutableStateOf(generateRandomString(10)) }
     var userInput by remember { mutableStateOf("") }
 
@@ -179,7 +316,6 @@ fun BreakGlassDialog(
                 OutlinedTextField(
                     value = userInput,
                     onValueChange = { newValue ->
-                        // Anti-copy/paste logic: only allow changes that add/remove one character at a time.
                         if (newValue.length <= userInput.length + 1) {
                             userInput = newValue
                         }
@@ -216,7 +352,6 @@ fun BreakGlassDialog(
 // --- Helper Function for Random String ---
 
 private fun generateRandomString(length: Int): String {
-    // Combine lowercase letters, uppercase letters, numbers, and special characters
     val allowedChars = ('a'..'z') + ('A'..'Z') + ('0'..'9') + "!@#$%?".toList()
     return (1..length)
         .map { allowedChars.random() }

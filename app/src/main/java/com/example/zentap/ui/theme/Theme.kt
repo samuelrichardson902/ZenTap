@@ -30,7 +30,12 @@ private val LightColors = lightColorScheme(
     onSurface = Color(0xFF1F2937),   // Dark gray text on surface elements
 
     primaryContainer = Color(0xFFDBEAFE),
-    onPrimaryContainer = Color(0xFF1E40AF)
+    onPrimaryContainer = Color(0xFF1E40AF),
+
+    error = Color(0xFFEF3F3F),             // A strong, clear red for errors
+    onError = Color(0xFFFFFFFF),           // White text on error color
+    errorContainer = Color(0xFFFFCDD2),    // A light red background for error components
+    onErrorContainer = Color(0xFFB71C1C)
 )
 
 /**
@@ -55,7 +60,12 @@ private val DarkColors = darkColorScheme(
     onSurface = Color(0xFFF3F4F6),
 
     primaryContainer = Color(0xFF1E40AF),
-    onPrimaryContainer = Color(0xFFDBEAFE)
+    onPrimaryContainer = Color(0xFFDBEAFE),
+
+    error = Color(0xFFF13232),             // A brighter red for visibility on dark backgrounds
+    onError = Color(0xFF000000),           // High-contrast dark text on error color
+    errorContainer = Color(0xFF6E0003),    // A muted, dark red background
+    onErrorContainer = Color(0xFFF2B8B5)
 )
 
 @Composable

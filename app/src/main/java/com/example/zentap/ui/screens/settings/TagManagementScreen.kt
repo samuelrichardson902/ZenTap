@@ -19,6 +19,7 @@ import androidx.lifecycle.LifecycleEventObserver // Import added
 import androidx.navigation.NavController
 import com.example.zentap.MainViewModel
 import com.example.zentap.util.ToastManager
+import com.example.zentap.util.safePopBackStack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +64,7 @@ fun TagManagementScreen(
     LaunchedEffect(isBlockedMode) {
         if (isBlockedMode) {
             ToastManager.showToast(context, "Cannot manage tags while blocked mode is active")
-            navController.popBackStack()
+            navController.safePopBackStack()
         }
     }
 
@@ -80,7 +81,7 @@ fun TagManagementScreen(
             TopAppBar(
                 title = { Text("Manage Tags") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.safePopBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },

@@ -5,14 +5,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import com.example.zentap.data.BlockedSettings
 import com.example.zentap.data.NfcSettings
+import com.example.zentap.ui.screens.blocked.AppBlockerAccessibilityService
 import com.example.zentap.ui.screens.nfc.ChangeTagActivity
 
 class NfcActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
         intent?.data?.let { uri ->
             val scannedId = uri.lastPathSegment
             if (scannedId != null) {
@@ -29,10 +28,40 @@ class NfcActivity : ComponentActivity() {
             NfcSettings.registerNewTag(this, scannedId)
             ToastManager.showToast(this, "Tag registered successfully!")
         } else if (NfcSettings.isTagRegistered(this, scannedId)) {
-            val blocked = BlockedSettings.getBlockedMode(this)
-            if (BlockedSettings.setBlockedMode(!blocked, this)) {
-                val message = "Blocked mode is now ${if (!blocked) "ON" else "OFF"}"
-                ToastManager.showToast(this, message)
+            val isMasterSwitchOn = BlockedSettings.getBlockedMode(this)
+
+            if (isMasterSwitchOn) {
+                // --- Trying to turn blocking OFF ---
+                val mode = BlockedSettings.getBlockingModeType(this)
+                BlockedSettings.setBlockedMode(false, this)
+
+                if (mode == "Strict") {
+                    val durationMs = BlockedSettings.getStrictUnlockDuration(this)
+                    val expiration = System.currentTimeMillis() + durationMs
+
+                    // --- THIS IS THE NEW LINE ---
+                    // Save the expiration time so the countdown can see it.
+                    BlockedSettings.setStrictUnlockExpiration(expiration, this)
+
+                    val intent = Intent(AppBlockerAccessibilityService.ACTION_SCHEDULE_REBLOCK).apply {
+                        putExtra(AppBlockerAccessibilityService.EXTRA_DURATION_MS, durationMs)
+                    }
+                    sendBroadcast(intent)
+                    val durationMinutes = durationMs / 60000
+                    ToastManager.showToast(this, "Strict Mode: Blocker off for $durationMinutes minutes.")
+                } else {
+                    ToastManager.showToast(this, "Blocked mode is now OFF")
+                }
+            } else {
+                // --- Trying to turn blocking ON ---
+                BlockedSettings.setBlockedMode(true, this)
+
+                // --- THIS IS THE NEW LINE ---
+                // Clear the expiration time so the countdown stops.
+                BlockedSettings.setStrictUnlockExpiration(0L, this)
+
+                sendBroadcast(Intent(AppBlockerAccessibilityService.ACTION_CANCEL_REBLOCK))
+                ToastManager.showToast(this, "Blocked mode is now ON")
             }
         } else {
             val intent = Intent(this, ChangeTagActivity::class.java).apply {
