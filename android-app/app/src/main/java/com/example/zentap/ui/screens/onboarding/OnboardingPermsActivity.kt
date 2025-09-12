@@ -18,14 +18,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.zentap.BaseActivity
 import com.example.zentap.R
+import com.example.zentap.ui.screens.privacy.PrivacyPolicyActivity
 import com.example.zentap.ui.theme.ZenTapTheme
 
 class OnboardingPermsActivity : BaseActivity() {
@@ -52,6 +58,7 @@ class OnboardingPermsActivity : BaseActivity() {
 fun OnboardingPermsScreen(
     onGrantPermission: () -> Unit
 ) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -64,31 +71,62 @@ fun OnboardingPermsScreen(
             painter = painterResource(id = R.drawable.ic_launcher_foreground),
             contentDescription = stringResource(R.string.app_name),
             modifier = Modifier.size(120.dp),
-            // Apply a theme-aware tint. Use primary color for emphasis.
             tint = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "Welcome to Zentap",
+            text = "Permissions Required for Zentap",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            // Apply primary color to the main heading.
             color = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "To block apps and help you focus, Zentap requires Accessibility permission. This allows the app to see which app you've opened so it can be blocked.",
-            fontSize = 16.sp,
-            lineHeight = 20.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            // Use onSurfaceVariant for secondary body text. It's less prominent than onSurface.
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        val annotatedString = buildAnnotatedString {
+            append("To help you focus and block distracting apps, Zentap needs the following permissions:\n\n")
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                append("• Accessibility Service:")
+            }
+            append(" To monitor the app you are currently using, so we can show the blocking screen at the right time.\n")
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                append("• Query All Packages:")
+            }
+            append(" To get a list of all your installed apps, so you can choose which ones to block.\n")
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                append("• Display Over Other Apps:")
+            }
+            append(" To show the blocking screen on top of the apps you have chosen to block.\n")
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                append("• Alarms & Reminders:")
+            }
+            append(" To schedule automatic blocking sessions.\n\n")
+            append("We take your privacy seriously. All data is stored locally on your device and is never shared. For more details, please review our ")
+            pushStringAnnotation(tag = "PrivacyPolicy", annotation = "PrivacyPolicy")
+            withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)) {
+                append("Privacy Policy")
+            }
+            pop()
+            append(".")
+        }
+
+        ClickableText(
+            text = annotatedString,
+            onClick = { offset ->
+                annotatedString.getStringAnnotations(tag = "PrivacyPolicy", start = offset, end = offset)
+                    .firstOrNull()?.let {
+                        context.startActivity(Intent(context, PrivacyPolicyActivity::class.java))
+                    }
+            },
+            style = MaterialTheme.typography.bodyLarge.copy(
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
+
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -98,7 +136,7 @@ fun OnboardingPermsScreen(
                 .fillMaxWidth()
                 .padding(bottom = 32.dp)
         ) {
-            Text("Grant Permission", fontSize = 16.sp)
+            Text("Agree & Continue", fontSize = 16.sp)
         }
     }
 }

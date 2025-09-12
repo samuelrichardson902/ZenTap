@@ -187,54 +187,77 @@ fun HomeScreen(
 fun StatusCard(
     isBlockerEnabled: Boolean,
     timeLeft: Long,
-    blockingMode: String, // The function now accepts the blockingMode
+    blockingMode: String,
     onToggle: () -> Unit
 ) {
     val context = LocalContext.current
     val statusText = if (isBlockerEnabled) "Status Active" else "Status Inactive"
     val icon = if (isBlockerEnabled) Icons.Default.Lock else Icons.Default.LockOpen
     val iconColor = if (isBlockerEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+    var menuExpanded by remember { mutableStateOf(false) }
 
-    // This condition correctly determines if the timer should be shown
     val showTimer = !isBlockerEnabled && blockingMode == "Strict" && timeLeft > 0
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = {
-                if (isBlockerEnabled) {
-                    ToastManager.showToast(context, "Blocked mode must be disabled using the NFC tag.")
-                } else {
-                    onToggle()
-                }
-            }),
+            .fillMaxWidth(),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 24.dp, horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = statusText,
-                modifier = Modifier.size(36.dp),
-                tint = iconColor
-            )
-            Text(
-                text = statusText,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            // The timer Text is now displayed only when the condition is met
-            if (showTimer) {
-                Text(
-                    text = "Unblocked for ${formatTime(timeLeft)}",
-                    fontSize = 14.sp,
-                    color = Color.Gray
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = {
+                        if (isBlockerEnabled) {
+                            ToastManager.showToast(context, "Blocked mode must be disabled using the NFC tag.")
+                        } else {
+                            onToggle()
+                        }
+                    })
+                    .padding(vertical = 24.dp, horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = statusText,
+                    modifier = Modifier.size(36.dp),
+                    tint = iconColor
                 )
+                Text(
+                    text = statusText,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                if (showTimer) {
+                    Text(
+                        text = "Unblocked for ${formatTime(timeLeft)}",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+            ) {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Privacy Policy") },
+                        onClick = {
+                            context.startActivity(android.content.Intent(context, com.example.zentap.ui.screens.privacy.PrivacyPolicyActivity::class.java))
+                            menuExpanded = false
+                        }
+                    )
+                }
             }
         }
     }
