@@ -62,7 +62,7 @@ fun OnboardingPermsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(64.dp))
@@ -74,7 +74,7 @@ fun OnboardingPermsScreen(
             tint = MaterialTheme.colorScheme.primary
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
             text = "Permissions Required for Zentap",
