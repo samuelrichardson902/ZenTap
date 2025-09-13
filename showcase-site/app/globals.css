@@ -2,7 +2,14 @@
 @plugin "daisyui" {
   themes: night --default;
 }
+@plugin "daisyui/theme" {
+  name: "night";
+  default: true;
+}
 
+@theme {
+  --color-hero: #146eff;
+}
 
 body {
   background: var(--background);

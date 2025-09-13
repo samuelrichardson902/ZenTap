@@ -1,45 +1,103 @@
-import ProductCanvas from "./ProductCanvas";
+"use client";
 
-export default function Home() {
+import { Suspense } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useGLTF, OrbitControls, Html } from "@react-three/drei";
+import { useScroll, useSpring, useTransform } from "framer-motion";
+// 1. Import useState and useEffect from React
+import { useRef, useState, useEffect } from "react";
+import * as THREE from "three";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
+
+// A helper function to convert degrees to radians for THREE.js
+const degToRad = (degrees) => degrees * (Math.PI / 180);
+
+/**
+ * The 3D model component.
+ */
+function ProductModel({ containerRef }) {
+  const ROTATION_CONFIG = {
+    start: { x: 0, y: 180, z: 0 },
+    scroll: { x: 180, y: 360, z: 90 },
+  };
+  const { scene } = useGLTF("/zentap-textured.glb");
+  const groupRef = useRef();
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  const animProgress = useTransform(scrollYProgress, [0, 0.75], [0, 1], {
+    clamp: true,
+  });
+
+  const smooth = useSpring(animProgress, {
+    stiffness: 100,
+    damping: 30,
+  });
+
+  useFrame(() => {
+    if (groupRef.current) {
+      const progress = smooth.get();
+      groupRef.current.rotation.x =
+        degToRad(ROTATION_CONFIG.start.x) +
+        progress * degToRad(ROTATION_CONFIG.scroll.x);
+      groupRef.current.rotation.y =
+        degToRad(ROTATION_CONFIG.start.y) +
+        progress * degToRad(ROTATION_CONFIG.scroll.y);
+      groupRef.current.rotation.z =
+        degToRad(ROTATION_CONFIG.start.z) +
+        progress * degToRad(ROTATION_CONFIG.scroll.z);
+    }
+  });
+
+  return <primitive ref={groupRef} object={scene} />;
+}
+
+/**
+ * The main canvas component that sets up the entire 3D scene.
+ */
+export default function ProductCanvas({ containerRef }) {
+  // 2. Add state to track if it's a touch device
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    // 3. On component mount, check if the navigator supports touch points.
+    // We check this in useEffect to ensure 'window' and 'navigator' are available.
+    const checkTouch = () => {
+      setIsTouchDevice(
+        typeof window !== "undefined" &&
+          ("ontouchstart" in window || navigator.maxTouchPoints > 0)
+      );
+    };
+    checkTouch();
+  }, []); // Empty array ensures this runs only once on mount.
+
   return (
-    // Wrap the page in a <main> tag to hold multiple sections
-    <main>
-      {/* This is your existing hero section */}
-      <section className="relative h-screen flex items-center justify-center bg-base-100 overflow-hidden">
-        {/* Layer 3: Header (Navbar) */}
-        <header className="absolute top-0 w-full p-4 flex justify-between z-20">
-          <h1 className="text-xl font-bold">MyProduct</h1>
-          <nav className="space-x-4">
-            <a href="#features">Features</a>
-            <a href="#buy">Buy</a>
-          </nav>
-        </header>
+    <Canvas
+      className="w-full h-full"
+      camera={{ position: [0, 0, 100], fov: 45 }}
+      gl={{ antialias: true }}
+    >
+      <ambientLight intensity={0.1} />
+      <directionalLight intensity={10.7} position={[40, 40, 100]} />
+      <directionalLight intensity={0.8} position={[-30, 20, -50]} />
+      <ProductModel containerRef={containerRef} />
 
-        {/* Layer 2: Big Header Text (Hero Content) */}
-        <div className="relative z-10 text-center p-4">
-          <h2 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight text-base-content">
-            Your Big Headline
-          </h2>
-          <p className="mt-4 text-lg sm:text-xl text-base-content/80 max-w-2xl mx-auto">
-            This is the catchy subtitle that explains what your product does.
-          </p>
-        </div>
-
-        {/* Layer 1: Product Showcase (Background) */}
-        <div className="absolute inset-0 w-full h-full z-0">
-          <ProductCanvas />
-        </div>
-      </section>
-
-      {/* --- NEW SPACER SECTION --- */}
-      {/* This new section adds content below the hero, forcing the page to scroll.
-        Giving it 'h-screen' makes it a very large spacer.
-        The 'id="features"' makes your navbar link work.
+      {/* 4. Pass enableRotate={!isTouchDevice} to OrbitControls.
+           - On desktop (NOT touch): it will be true, allowing drag-to-rotate.
+           - On mobile (IS touch): it will be false, disabling drag and allowing page scroll.
       */}
-      <section id="features" className="h-screen bg-base-200 p-12">
-        <h2 className="text-4xl font-bold">Features Content Goes Here</h2>
-        <p>This is the next part of your page.</p>
-      </section>
-    </main>
+      <OrbitControls
+        enableZoom={false}
+        enablePan={false}
+        rotateSpeed={0.5}
+        enableRotate={!isTouchDevice}
+      />
+      <EffectComposer>
+        <Bloom luminanceThreshold={0.9} intensity={0.1} mipmapBlur />
+      </EffectComposer>
+    </Canvas>
   );
 }
