@@ -1,93 +1,45 @@
-"use client";
+import ProductCanvas from "./ProductCanvas";
 
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, OrbitControls, Environment } from "@react-three/drei";
-import { useScroll, useSpring } from "framer-motion";
-import { useRef, useEffect } from "react";
-import * as THREE from "three";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
-
-function ProductModel() {
-  // Load the model
-  const { scene } = useGLTF("/zentap-optimized.glb");
-  const groupRef = useRef();
-  
-  // Apply material properties and center the model
-  useEffect(() => {
-    // Center the model's geometry
-    const box = new THREE.Box3().setFromObject(scene);
-    const center = box.getCenter(new THREE.Vector3());
-    scene.position.sub(center);
-
-    // Traverse the scene to find meshes and update their materials
-    scene.traverse((child) => {
-      if (child.isMesh) {
-        // To make the material metallic, we adjust metalness and roughness
-        // metalness: 1.0 makes it fully metallic.
-        // roughness: 0.4 makes it semi-reflective, not a perfect mirror.
-        child.material.metalness = 0.7;
-        child.material.roughness = 0.6;
-      }
-    });
-  }, [scene]);
-
-  // Framer Motion scroll animation
-  const { scrollYProgress } = useScroll();
-  const smooth = useSpring(scrollYProgress.get(), { stiffness: 100, damping: 30 });
-
-  useFrame(() => {
-    // Rotate the model group based on scroll progress
-    if (groupRef.current) {
-      groupRef.current.rotation.y = smooth.get() * Math.PI * 2;
-    }
-  });
-
-  return <primitive ref={groupRef} object={scene} />;
-}
-
-export default function ProductCanvas() {
+export default function Home() {
   return (
-    <Canvas 
-      className="w-full h-full" 
-      camera={{ position: [0, 0, 100], fov: 45 }}
-      gl={{ antialias: true }}
-    >
-      {/* 1. LIGHTING & ENVIRONMENT */}
-      {/* Reduced ambient light to avoid washing out the scene */}
-      <ambientLight intensity={0.1} />
-      
-      {/* A strong spotlight to create highlights and shadows */}
-      <spotLight 
-        position={[2550, 250, 100]} 
-        angle={0.35} 
-        penumbra={1} 
-        intensity={1} 
-        castShadow 
-      />
-      
-      {/* The Environment component adds realistic lighting and reflections from an HDRI map */}
-      {/* The 'city' preset is a good starting point for neutral studio lighting. */}
-      <Environment preset="studio" />
+    // Wrap the page in a <main> tag to hold multiple sections
+    <main>
+      {/* This is your existing hero section */}
+      <section className="relative h-screen flex items-center justify-center bg-base-100 overflow-hidden">
+        {/* Layer 3: Header (Navbar) */}
+        <header className="absolute top-0 w-full p-4 flex justify-between z-20">
+          <h1 className="text-xl font-bold">MyProduct</h1>
+          <nav className="space-x-4">
+            <a href="#features">Features</a>
+            <a href="#buy">Buy</a>
+          </nav>
+        </header>
 
-      {/* 2. THE MODEL */}
-      <ProductModel />
-      
-      {/* Controls for user interaction */}
-      <OrbitControls
-        enableZoom={false}
-        enablePan={false}
-        rotateSpeed={0.5}
-      />
+        {/* Layer 2: Big Header Text (Hero Content) */}
+        <div className="relative z-10 text-center p-4">
+          <h2 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight text-base-content">
+            Your Big Headline
+          </h2>
+          <p className="mt-4 text-lg sm:text-xl text-base-content/80 max-w-2xl mx-auto">
+            This is the catchy subtitle that explains what your product does.
+          </p>
+        </div>
 
-      {/* 3. POST-PROCESSING EFFECTS */}
-      <EffectComposer>
-        {/* Bloom adds a glow effect to bright areas, giving it a premium feel. */}
-        <Bloom 
-          luminanceThreshold={0.6} // How bright a pixel needs to be to bloom
-          intensity={0.15}          // Strength of the glow
-          mipmapBlur              // Creates a more natural, feathered blur
-        />
-      </EffectComposer>
-    </Canvas>
+        {/* Layer 1: Product Showcase (Background) */}
+        <div className="absolute inset-0 w-full h-full z-0">
+          <ProductCanvas />
+        </div>
+      </section>
+
+      {/* --- NEW SPACER SECTION --- */}
+      {/* This new section adds content below the hero, forcing the page to scroll.
+        Giving it 'h-screen' makes it a very large spacer.
+        The 'id="features"' makes your navbar link work.
+      */}
+      <section id="features" className="h-screen bg-base-200 p-12">
+        <h2 className="text-4xl font-bold">Features Content Goes Here</h2>
+        <p>This is the next part of your page.</p>
+      </section>
+    </main>
   );
 }

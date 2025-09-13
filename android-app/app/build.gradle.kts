@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.zentap"
+    namespace = "com.zentap.android"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.zentap"
+        applicationId = "com.zentap.android"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

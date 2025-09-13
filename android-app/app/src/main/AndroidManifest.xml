@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.zentap">
+    package="com.zentap.android">
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /> <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <queries>
@@ -30,14 +30,14 @@
             android:name="android.app.PROPERTY_DATA_SAFETY_DATA_DELETION"
             android:value="none" />
         <receiver
-            android:name=".util.ScheduleAlarmReceiver"
+            android:name="com.zentap.android.util.ScheduleAlarmReceiver"
             android:enabled="true"
             android:exported="false" />
         <activity
-            android:name=".ui.screens.onboarding.OnboardingPermsActivity"
+            android:name="com.zentap.android.ui.screens.onboarding.OnboardingPermsActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name="com.zentap.android.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,27 +45,27 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.screens.blocked.BlockingActivity"
+            android:name="com.zentap.android.ui.screens.blocked.BlockingActivity"
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleTop"/>
         <activity
-            android:name=".ui.screens.onboarding.OnboardingTagActivity"
+            android:name="com.zentap.android.ui.screens.onboarding.OnboardingTagActivity"
             android:exported="false"
             android:launchMode="singleTop">
         </activity>
 
         <activity
-            android:name=".ui.screens.privacy.PrivacyPolicyActivity"
+            android:name="com.zentap.android.ui.screens.privacy.PrivacyPolicyActivity"
             android:exported="false"/>
 
         <activity
-            android:name=".ui.screens.nfc.ChangeTagActivity"
+            android:name="com.zentap.android.ui.screens.nfc.ChangeTagActivity"
             android:exported="false"/>
 
 
         <activity
-            android:name=".util.NfcActivity"
+            android:name="com.zentap.android.util.NfcActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
@@ -82,7 +82,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".ui.screens.blocked.AppBlockerAccessibilityService"
+            android:name="com.zentap.android.ui.screens.blocked.AppBlockerAccessibilityService"
             android:exported="false"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
