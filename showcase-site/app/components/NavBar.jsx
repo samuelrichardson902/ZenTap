@@ -26,7 +26,7 @@ export default function NavBar() {
         </ul>
       </div>
       <div className="navbar-end">
-        <a href="#waitlist" className="btn btn-primary rounded-lg text-white">
+        <a href="#waitlist" className="btn border border-primary rounded-lg">
           Get It Now
         </a>
         <div className="dropdown lg:hidden">
