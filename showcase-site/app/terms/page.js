@@ -1,3 +1,6 @@
+import Link from "next/link";
+/* eslint-disable react/no-unescaped-entities */
+
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-base-100 text-base-content/90">
@@ -229,9 +232,9 @@ export default function TermsOfService() {
 
         {/* --- Footer Link --- */}
         <div className="mt-12 pt-8 border-t border-base-300">
-          <a href="/" className="btn btn-primary">
+          <Link href="/" className="btn btn-primary">
             ← Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     </div>
