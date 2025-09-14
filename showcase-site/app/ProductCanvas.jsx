@@ -89,12 +89,14 @@ export default function ProductCanvas({ containerRef }) {
            - On desktop (NOT touch): it will be true, allowing drag-to-rotate.
            - On mobile (IS touch): it will be false, disabling drag and allowing page scroll.
       */}
+      {/*  disable dragging
       <OrbitControls
         enableZoom={false}
         enablePan={false}
         rotateSpeed={0.5}
         enableRotate={!isTouchDevice}
       />
+      */}
       <EffectComposer>
         <Bloom luminanceThreshold={0.9} intensity={0.1} mipmapBlur />
       </EffectComposer>

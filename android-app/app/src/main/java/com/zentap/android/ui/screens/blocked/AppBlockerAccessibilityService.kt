@@ -194,17 +194,17 @@ class AppBlockerAccessibilityService : AccessibilityService() {
     override fun onInterrupt() {}
 
     companion object {
-        const val ACTION_GRANT_TEMP_ACCESS = "com.example.zentap.GRANT_TEMP_ACCESS"
+        const val ACTION_GRANT_TEMP_ACCESS = "com.zentap.android.GRANT_TEMP_ACCESS"
         const val EXTRA_PACKAGE_NAME = "package_name"
-        const val ACTION_SCHEDULE_REBLOCK = "com.example.zentap.SCHEDULE_REBLOCK"
-        const val ACTION_CANCEL_REBLOCK = "com.example.zentap.CANCEL_REBLOCK"
+        const val ACTION_SCHEDULE_REBLOCK = "com.zentap.android.SCHEDULE_REBLOCK"
+        const val ACTION_CANCEL_REBLOCK = "com.zentap.android.CANCEL_REBLOCK"
         const val EXTRA_DURATION_MS = "duration_ms"
-        const val ACTION_START_STRICT_ACTIVATION_TIMER = "com.example.zentap.START_STRICT_ACTIVATION_TIMER"
-        const val ACTION_CANCEL_STRICT_ACTIVATION_TIMER = "com.example.zentap.CANCEL_STRICT_ACTIVATION_TIMER"
+        const val ACTION_START_STRICT_ACTIVATION_TIMER = "com.zentap.android.START_STRICT_ACTIVATION_TIMER"
+        const val ACTION_CANCEL_STRICT_ACTIVATION_TIMER = "com.zentap.android.CANCEL_STRICT_ACTIVATION_TIMER"
 
         // New constant for the state change signal
-        const val ACTION_BLOCKER_STATE_CHANGED = "com.example.zentap.BLOCKER_STATE_CHANGED"
+        const val ACTION_BLOCKER_STATE_CHANGED = "com.zentap.android.BLOCKER_STATE_CHANGED"
 
-        const val ACTION_TRIGGER_IMMEDIATE_BLOCK_CHECK = "com.example.zentap.TRIGGER_IMMEDIATE_BLOCK_CHECK"
+        const val ACTION_TRIGGER_IMMEDIATE_BLOCK_CHECK = "com.zentap.android.TRIGGER_IMMEDIATE_BLOCK_CHECK"
     }
 }

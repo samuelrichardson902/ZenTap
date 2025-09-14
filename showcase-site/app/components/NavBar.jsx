@@ -2,7 +2,7 @@ export default function NavBar() {
   return (
     <div className="navbar bg-base-100 fixed top-0 w-full z-50 shadow-lg h-20">
       <div className="navbar-start">
-        <a href="#" className="btn btn-ghost text-xl font-bold">
+        <a href="#" className="btn btn-ghost text-3xl font-bold headerShadow">
           ZenTap
         </a>
       </div>
@@ -26,8 +26,8 @@ export default function NavBar() {
         </ul>
       </div>
       <div className="navbar-end">
-        <a href="#waitlist" className="btn btn-primary rounded-lg">
-          Get Now
+        <a href="#waitlist" className="btn btn-primary rounded-lg text-white">
+          Get It Now
         </a>
         <div className="dropdown lg:hidden">
           <div tabIndex={0} role="button" className="btn btn-ghost">

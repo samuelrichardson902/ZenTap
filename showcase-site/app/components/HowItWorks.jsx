@@ -29,7 +29,7 @@ export default function HowItWorks() {
       className="relative bg-base-200 py-24 px-4 scroll-mt-20"
     >
       <div className="max-w-3xl mx-auto text-center mb-16">
-        <h2 className="text-4xl lg:text-5xl font-bold mb-4">
+        <h2 className="text-4xl lg:text-5xl font-bold mb-4 headerShadow">
           How ZenTap Works
         </h2>
         <p className="text-lg text-base-content/80">

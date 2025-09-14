@@ -35,22 +35,11 @@ export default function Home() {
             className="relative z-10 text-center p-4"
           >
             <div className="inline-block">
-              <h2
-                className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight text-hero"
-                style={{
-                  textShadow:
-                    "2px 2px 0px #000, 4px 4px 0px #333, 6px 6px 0px #666, 8px 8px 0px #999",
-                }}
-              >
+              <h2 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight text-hero headerShadow">
                 ZenTap
               </h2>
 
-              <p
-                className="mt-4 text-lg sm:text-xl max-w-2xl mx-auto font-extrabold tracking-tight text-hero/80"
-                style={{
-                  textShadow: "2px 2px 0px #000, 3px 3px 0px #333",
-                }}
-              >
+              <p className="mt-4 text-lg sm:text-xl max-w-2xl mx-auto font-extrabold tracking-tight text-hero/80 headerShadow">
                 Reclaim Your Time From Your Phone
               </p>
             </div>

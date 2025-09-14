@@ -16,3 +16,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.headerShadow {
+  text-shadow: 2px 2px 0px #000, 3px 3px 0px #333, 4px 4px 0px #666;
+  /* Animate the shadow moving */
+  transition: text-shadow 0.2s, color 0.2s;
+}
+
+.headerShadow:hover {
+  text-shadow: 3px 3px 0px #000, 5px 5px 0px #333, 7px 7px 0px #666;
+}
+
+.boxShadow {
+  box-shadow: 2px 2px 0px #000, 3px 3px 0px #333, 4px 4px 0px #666;
+  /* Animate the shadow moving */
+  transition: text-shadow 0.2s, color 0.2s;
+}
+
+.boxShadow:hover {
+  box-shadow: 3px 3px 0px #000, 5px 5px 0px #333, 7px 7px 0px #666;
+}
