@@ -75,7 +75,7 @@ export default function HowItWorks() {
 
 function FeatureStep({ title, description, children }) {
   return (
-    <div className="flex flex-col items-center text-center h-full justify-between">
+    <div className="flex flex-col items-center text-center justify-between">
       <div>
         <h3 className="text-xl font-bold mb-3">{title}</h3>
         <p className="text-base-content/70 mb-6 max-w-xs">{description}</p>

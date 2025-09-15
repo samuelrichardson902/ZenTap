@@ -10,9 +10,9 @@ export default function FAQ() {
         "No our app functions solely on your phone and doesn't send anything to our servers",
     },
     {
-      question: "How long does shipping take?",
+      question: "Does it work with multiple tags?",
       answer:
-        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+        "Yes you can register as many ZenTap tags to your app as you like by simply just tapping them",
     },
     {
       question: "Do you ship internationally?",

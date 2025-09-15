@@ -20,7 +20,7 @@ function ProductModel({ containerRef }) {
     start: { x: 0, y: 180, z: 0 },
     scroll: { x: 180, y: 360, z: 90 },
   };
-  const { scene } = useGLTF("/zentap-textured.glb");
+  const { scene } = useGLTF("/zentap-textured-opt.glb");
   const groupRef = useRef();
 
   const { scrollYProgress } = useScroll({
