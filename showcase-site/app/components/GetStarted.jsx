@@ -20,7 +20,7 @@ export default function GetStarted() {
       description:
         "Skip the setup and support the project. Get a pre-programmed tag that works instantly.",
       cta: "Buy Now",
-      link: "https://your-store-link.com",
+      link: "/shop",
       isExternal: true,
     },
     {
