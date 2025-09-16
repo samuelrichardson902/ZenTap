@@ -1,47 +1,54 @@
 "use client";
 
-import { useRef } from "react"; // 1. Import useRef
+import { useRef } from "react";
 import ProductCanvas from "./ProductCanvas";
 import { motion, useScroll, useTransform } from "framer-motion";
+import Link from "next/link";
 
 import NavBar from "./components/NavBar";
 import HowItWorks from "./components/HowItWorks";
 import Features from "./components/Features";
-import Waitlist from "./components/Waitlist";
 import FAQ from "./components/FAQ";
 import Footer from "./components/Footer";
 import Contact from "./components/Contact";
+import WhyWeAreDifferent from "./components/WhyWeAreDifferent";
+import GetStarted from "./components/GetStarted";
 
 export default function Home() {
-  const containerRef = useRef(null); // 2. Create the container ref // 3. Update useScroll to target the container.
+  const containerRef = useRef(null);
 
-  // This calculates progress just for the container, from when its top hits
-  // the viewport top ("start start") to when its bottom hits the viewport bottom ("end end").
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
-  }); // These transforms are now perfectly tied to the container's scroll progress
+  });
 
-  const heroTextY = useTransform(scrollYProgress, [0, 0.1], ["0%", "-50%"]); // Fades in first 10%
+  const heroTextY = useTransform(scrollYProgress, [0, 0.1], ["0%", "-50%"]);
   const heroTextOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0]);
 
   return (
     <main>
       <NavBar />
-      <div ref={containerRef} className="relative h-[250vh]">
+      <div ref={containerRef} className="relative h-[200vh]">
         <section className="sticky top-20 h-screen flex items-center justify-center bg-base-100 overflow-hidden">
           <motion.div
             style={{ y: heroTextY, opacity: heroTextOpacity }}
             className="relative z-10 text-center p-4"
           >
             <div className="inline-block">
-              <h2 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight text-hero headerShadow">
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-hero headerShadow">
                 ZenTap
-              </h2>
-
-              <p className="mt-4 text-lg sm:text-xl max-w-2xl mx-auto font-extrabold tracking-tight text-hero/80 headerShadow">
-                Reclaim Your Time From Your Phone
+              </h1>
+              <p className="text-2xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-hero headerShadow mt-4">
+                The Open-Source Physical App Blocker
               </p>
+              <div className="mt-6 flex justify-center gap-4">
+                <Link
+                  href="#getStarted"
+                  className="btn bg-hero rounded-lg boxShadow"
+                >
+                  Get started
+                </Link>
+              </div>
             </div>
           </motion.div>
 
@@ -51,8 +58,9 @@ export default function Home() {
         </section>
       </div>
       <HowItWorks />
+      <WhyWeAreDifferent />
       <Features />
-      <Waitlist />
+      <GetStarted />
       <FAQ />
       <Contact />
       <Footer />

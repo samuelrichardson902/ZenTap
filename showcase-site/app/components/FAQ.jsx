@@ -1,28 +1,37 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
+import Link from "next/link";
 
 export default function FAQ() {
   const faqData = [
     {
-      question: "Do you track any of my data?",
-      answer:
-        "No our app functions solely on your phone and doesn't send anything to our servers",
+      question: "How do I program my own tag?",
+      answer: (
+        <>
+          We have a dedicated guide for that! You can find the full step-by-step
+          instructions on our{" "}
+          <Link href="/diy-guide" className="link link-primary">
+            DIY Guide page
+          </Link>
+          .
+        </>
+      ),
     },
     {
-      question: "Does it work with multiple tags?",
+      question: "What app do I use to write to my tag?",
       answer:
-        "Yes you can register as many ZenTap tags to your app as you like by simply just tapping them",
+        "We recommend 'NFC Tools' on Android. It's a free and powerful app that makes it easy to write the necessary data to your tag.",
     },
     {
-      question: "Do you ship internationally?",
+      question: "How do I know my data is private?",
       answer:
-        "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.",
+        "Because ZenTap is 100% offline. The app has no access to the internet, and we have no servers to store your data on. All your information stays on your device, always.",
     },
     {
-      question: "How can I track my order?",
+      question: "Why is it open-source?",
       answer:
-        "Nemo enim ipsam voluptatem quia voluptas sit asnatur aut odit aut fugit, sed quia consequuntur magni dolores eos.",
+        "We believe in transparency and community. By making our code open-source, anyone can inspect it to verify our privacy claims. It also allows the community to contribute, suggest features, and even create their own versions of the app.",
     },
   ];
 
@@ -35,7 +44,7 @@ export default function FAQ() {
   return (
     <section
       id="faq"
-      className="relative min-h-screen bg-base-200 py-12 px-4 sm:px-6 lg:px-12 scroll-mt-20 flex items-center justify-center"
+      className="relative bg-base-200 py-12 px-4 sm:px-6 lg:px-12 flex items-center justify-center"
     >
       <div className="w-full max-w-4xl mx-auto">
         <div className="text-center mb-12">
