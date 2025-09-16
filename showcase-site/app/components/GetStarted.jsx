@@ -21,7 +21,7 @@ export default function GetStarted() {
         "Skip the setup and support the project. Get a pre-programmed tag that works instantly.",
       cta: "Buy Now",
       link: "/shop",
-      isExternal: true,
+      isExternal: false,
     },
     {
       icon: <Wrench size={48} className="text-primary" />,
