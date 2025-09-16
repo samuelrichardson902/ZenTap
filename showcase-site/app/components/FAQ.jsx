@@ -9,8 +9,8 @@ export default function FAQ() {
       question: "How do I program my own tag?",
       answer: (
         <>
-          We have a dedicated guide for that! You can find the full
-          step-by-step instructions on our{" "}
+          We have a dedicated guide for that! You can find the full step-by-step
+          instructions on our{" "}
           <Link href="/diy-guide" className="link link-primary">
             DIY Guide page
           </Link>
@@ -19,19 +19,14 @@ export default function FAQ() {
       ),
     },
     {
-      question: "What kind of NFC tag do I need to buy?",
-      answer:
-        "You'll need an NTAG213, NTAG215, or NTAG216 chip. These are the most common and widely compatible types of NFC tags. We recommend a tag with at least 144 bytes of memory to be safe.",
-    },
-    {
       question: "What app do I use to write to my tag?",
       answer:
-        "We recommend 'NFC Tools' for both Android and iOS. It's a free and powerful app that makes it easy to write the necessary data to your tag.",
+        "We recommend 'NFC Tools' on Android. It's a free and powerful app that makes it easy to write the necessary data to your tag.",
     },
     {
       question: "How do I know my data is private?",
       answer:
-        "Because ZenTap is 100% offline. The app has no permission to access the internet, and we have no servers to store your data on. All your information stays on your device, always.",
+        "Because ZenTap is 100% offline. The app has no access to the internet, and we have no servers to store your data on. All your information stays on your device, always.",
     },
     {
       question: "Why is it open-source?",
@@ -49,7 +44,7 @@ export default function FAQ() {
   return (
     <section
       id="faq"
-      className="relative min-h-screen bg-base-200 py-12 px-4 sm:px-6 lg:px-12 scroll-mt-20 flex items-center justify-center"
+      className="relative bg-base-200 py-12 px-4 sm:px-6 lg:px-12 flex items-center justify-center"
     >
       <div className="w-full max-w-4xl mx-auto">
         <div className="text-center mb-12">

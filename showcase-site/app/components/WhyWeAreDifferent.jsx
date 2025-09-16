@@ -1,4 +1,6 @@
 import { ShieldCheck, Code, Tag } from "lucide-react";
+import { IoKeyOutline } from "react-icons/io5";
+import { TbBarrierBlock } from "react-icons/tb";
 
 export default function WhyWeAreDifferent() {
   const principles = [
@@ -7,7 +9,13 @@ export default function WhyWeAreDifferent() {
       title: "Open-Source",
       description:
         "Our code is 100% open-source on GitHub. This means complete transparency and the ability for you to inspect, modify, and even add features to your own app.",
-      link: "https://github.com/your-repo", // Replace with your actual GitHub repo
+      link: "https://github.com/samuelrichardson902/ZenTap",
+    },
+    {
+      icon: <TbBarrierBlock size={48} className="text-primary" />,
+      title: "Physical Barrier to Impulse",
+      description:
+        "We turn a digital problem into a physical solution. Mindless scrolling is an impulse. To unlock your apps, you must perform a deliberate, physical action. This friction breaks the habit loop and gives you back control.",
     },
     {
       icon: <ShieldCheck size={48} className="text-primary" />,
@@ -17,24 +25,21 @@ export default function WhyWeAreDifferent() {
     },
     {
       icon: <Tag size={48} className="text-primary" />,
-      title: "Your Choice (BYO Tag)",
+      title: "Free Forever",
       description:
-        "The app is free to use. You can program any standard NFC tag to work with ZenTap. We empower you to use what you already have, removing any barrier to entry.",
+        "The ZenTap app is 100% free. Period. It works with any standard NFC tag, removing the barrier to entry. Follow our simple guide to program your own, or buy a pre-programmed tag from us to skip the setup and support the project.",
     },
   ];
 
   return (
-    <section id="why-we-are-different" className="bg-base-100 py-24 px-4">
+    <section id="whyWereDifferent" className="bg-base-100 py-24 px-4">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold mb-4 headerShadow">
             Why We're Different
           </h2>
-          <p className="text-lg text-base-content/80 max-w-2xl mx-auto">
-            Our philosophy is simple: build a tool that respects users and puts them in control.
-          </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-12 text-center">
+        <div className="grid md:grid-cols-4 gap-12 text-center">
           {principles.map((principle) => (
             <div key={principle.title} className="flex flex-col items-center">
               <div className="mb-4">{principle.icon}</div>

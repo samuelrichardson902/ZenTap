@@ -15,7 +15,7 @@ export default function NavBar() {
             <a href="#features">Features</a>
           </li>
           <li>
-            <a href="#waitlist">Waitlist</a>
+            <a href="#getStarted">Get Started</a>
           </li>
           <li>
             <a href="#faq">FAQ's</a>
@@ -26,7 +26,7 @@ export default function NavBar() {
         </ul>
       </div>
       <div className="navbar-end">
-        <a href="#waitlist" className="btn border border-primary rounded-lg">
+        <a href="#getStarted" className="btn border border-primary rounded-lg">
           Get It Now
         </a>
         <div className="dropdown lg:hidden">
@@ -57,7 +57,7 @@ export default function NavBar() {
               <a href="#features">Features</a>
             </li>
             <li>
-              <a href="#waitlist">Waitlist</a>
+              <a href="#getStarted">Get Started</a>
             </li>
             <li>
               <a href="#faq">FAQ's</a>

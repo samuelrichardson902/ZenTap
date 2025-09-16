@@ -33,14 +33,17 @@ export default function HowItWorks() {
           How ZenTap Works
         </h2>
         <p className="text-lg text-base-content/80">
-          Regain your focus in three simple steps. Select distracting apps,
-          activate the blocker, and get your time back.
+          ZenTap is an open-source app blocker that uses a physical NFC tag as a
+          "key" for your distracting apps. By creating a real-world barrier, it
+          helps you break the habit of impulsive opening up apps and
+          "DoomScrolling". Regain your focus in three simple steps:
+          <br />
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-7xl mx-auto">
         <FeatureStep
-          title="1. Select Your Apps"
+          title="1. Select Distracting Apps"
           description="Choose exactly which apps you want to block."
         >
           <PhoneDisplay
@@ -50,7 +53,7 @@ export default function HowItWorks() {
         </FeatureStep>
 
         <FeatureStep
-          title="2. Activate Focus"
+          title="2. Activate the Blocker"
           description="Activate the blocker from the home screen or by tapping your ZenTap tag."
         >
           <PhoneDisplay
@@ -60,7 +63,7 @@ export default function HowItWorks() {
         </FeatureStep>
 
         <FeatureStep
-          title="3. Enjoy Focus"
+          title="3. Live Distraction Free"
           description="Your apps are now blocked until you tap your tag again to unlock."
         >
           <PhoneDisplay

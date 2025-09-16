@@ -28,7 +28,7 @@ export default function Home() {
   return (
     <main>
       <NavBar />
-      <div ref={containerRef} className="relative h-[250vh]">
+      <div ref={containerRef} className="relative h-[200vh]">
         <section className="sticky top-20 h-screen flex items-center justify-center bg-base-100 overflow-hidden">
           <motion.div
             style={{ y: heroTextY, opacity: heroTextOpacity }}
@@ -36,14 +36,17 @@ export default function Home() {
           >
             <div className="inline-block">
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-hero headerShadow">
-                The Open-Source, Offline-First App Blocker
+                ZenTap
               </h1>
-              <div className="mt-8 flex justify-center gap-4">
-                <Link href="#get-started" className="btn btn-primary">
-                  Get it now
-                </Link>
-                <Link href="#get-started" className="btn btn-secondary">
-                  Buy a Supporter Tag
+              <p className="text-2xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-hero headerShadow mt-4">
+                The Open-Source Physical App Blocker
+              </p>
+              <div className="mt-6 flex justify-center gap-4">
+                <Link
+                  href="#getStarted"
+                  className="btn bg-hero rounded-lg boxShadow"
+                >
+                  Get started
                 </Link>
               </div>
             </div>
