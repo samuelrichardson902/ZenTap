@@ -1,10 +1,10 @@
 import { ShieldCheck, Code, Tag } from "lucide-react";
-import { IoKeyOutline } from "react-icons/io5";
 import { TbBarrierBlock } from "react-icons/tb";
 
 export default function WhyWeAreDifferent() {
   const principles = [
     {
+      id: "open-source",
       icon: <Code size={48} className="text-primary" />,
       title: "Open-Source",
       description:
@@ -12,18 +12,21 @@ export default function WhyWeAreDifferent() {
       link: "https://github.com/samuelrichardson902/ZenTap",
     },
     {
+      id: "physical-barrier",
       icon: <TbBarrierBlock size={48} className="text-primary" />,
-      title: "Physical Barrier to Impulse",
+      title: `Physical Barrier to "DoomScrolling"`,
       description:
-        "We turn a digital problem into a physical solution. Mindless scrolling is an impulse. To unlock your apps, you must perform a deliberate, physical action. This friction breaks the habit loop and gives you back control.",
+        "Unlike easy-to-bypass software blockers, ZenTap requires a physical action. You have to get up and tap your tag to unlock apps, creating real friction that helps to break the impulse and give you back control.",
     },
     {
+      id: "privacy-first",
       icon: <ShieldCheck size={48} className="text-primary" />,
       title: "Privacy-First & Offline",
       description:
         "ZenTap is 100% offline. All your data is stored exclusively on your device. No servers, no tracking, no exceptions. Your data is yours, period.",
     },
     {
+      id: "free-forever",
       icon: <Tag size={48} className="text-primary" />,
       title: "Free Forever",
       description:
@@ -41,7 +44,7 @@ export default function WhyWeAreDifferent() {
         </div>
         <div className="grid md:grid-cols-4 gap-12 text-center">
           {principles.map((principle) => (
-            <div key={principle.title} className="flex flex-col items-center">
+            <div key={principle.id} className="flex flex-col items-center">
               <div className="mb-4">{principle.icon}</div>
               <h3 className="text-2xl font-bold mb-2">{principle.title}</h3>
               <p className="text-base-content/70 mb-4">

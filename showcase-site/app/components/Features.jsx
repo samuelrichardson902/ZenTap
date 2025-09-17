@@ -6,14 +6,11 @@ import PhoneDisplay from "./PhoneDisplay";
 import { TbLock, TbClockCog, TbClockPlus, TbTags } from "react-icons/tb";
 import { IoWarningOutline } from "react-icons/io5";
 
-// (featuresData array remains the same)
-// ...
 const featuresData = [
   {
     icon: TbLock,
     title: "Strict Mode",
-    description:
-      "Turns the tag toggling on and off the blocker to instead only allowing you access for your chosen amount of time set by the unlock duration for unbreakable focus.",
+    description: `For unbreakable focus. In Strict Mode, tapping your tag won't turn off the block. It will only grant you a short, pre-set "unlock duration" (like 5 minutes) to quickly do what you need before re-locking automatically.`,
     phoneImg: "/app-showcase/home_screen_strict.png",
     imgAlt: "Strict Mode Enabled",
   },
@@ -21,23 +18,21 @@ const featuresData = [
     icon: TbClockCog,
     title: "AutoLock",
     description:
-      "Automatically lock and unlock your apps on a schedule. Set it for work, study, or bedtime.",
+      "Build a routine and put your focus on autopilot. Schedule ZenTap to automatically lock distracting apps during work hours, study sessions, or in the evening to protect your time.",
     phoneImg: "/app-showcase/set_auto_lock.png",
     imgAlt: "AutoLock scheduling screen",
   },
   {
     icon: IoWarningOutline,
     title: "Break Glass",
-    description:
-      "Need emergency access? This feature lets you turn off blocking if you lose your tag",
+    description: `For true emergencies, the 'Break Glass' feature is your escape hatch. It requires you to type a random string of text to disable the blocker, and it's purposefully annoying. This creates just enough friction to make you stop and think: 'Is this really an emergency?'`,
     phoneImg: "/app-showcase/break_glass.png",
     imgAlt: "Break Glass feature",
   },
   {
     icon: TbClockPlus,
     title: "Request a Minute",
-    description:
-      "Lets you request a 1-minute unlock, however it makes you wait 30 seconds allowing you emergency access to respond to someone but helping to stop impulsive app openings.",
+    description: `Sometimes you just need a moment. This feature grants a 60-second unlock for quick tasks, like responding to a message. A built-in 30-second delay acts as a "cooling-off" period, preventing impulse and preserving your overall focus.`,
     phoneImg: "/app-showcase/request_minute.png",
     imgAlt: "Request a Minute feature",
   },
@@ -45,7 +40,7 @@ const featuresData = [
     icon: TbTags,
     title: "Manage Your Tags",
     description:
-      "You can have multiple tags allowing you to lock and unlock your apps in  different places like at the office or your home",
+      "Sync multiple tags to your account. Keep a tag at your office desk, one in your kitchen at home, and another in your bag, ensuring you always have a key to your focus nearby.",
     phoneImg: "/app-showcase/manage_tags.png",
     imgAlt: "Manage Tags feature",
   },

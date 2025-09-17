@@ -33,11 +33,10 @@ export default function HowItWorks() {
           How ZenTap Works
         </h2>
         <p className="text-lg text-base-content/80">
-          ZenTap is an open-source app blocker that uses a physical NFC tag as a
-          "key" for your distracting apps. By creating a real-world barrier, it
-          helps you break the habit of impulsive opening up apps and
-          "DoomScrolling". Regain your focus in three simple steps:
-          <br />
+          ZenTap is an open-source app blocker using a physical NFC tag as a
+          "key" to your distractions. By creating a real-world barrier, it helps
+          you break the habit of impulsively opening apps and doomscrolling.
+          Regain your focus in three simple steps:
         </p>
       </div>
 

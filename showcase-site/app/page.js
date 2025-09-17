@@ -35,10 +35,10 @@ export default function Home() {
             className="relative z-10 text-center p-4"
           >
             <div className="inline-block">
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-hero headerShadow">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-hero headerShadow">
                 ZenTap
               </h1>
-              <p className="text-2xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-hero headerShadow mt-4">
+              <p className="text-xl sm:text-xl lg:text-2xl font-bold tracking-tight text-hero headerShadow mt-4">
                 The Open-Source Physical App Blocker
               </p>
               <div className="mt-6 flex justify-center gap-4">
