@@ -13,6 +13,7 @@ import Footer from "./components/Footer";
 import Contact from "./components/Contact";
 import WhyWeAreDifferent from "./components/WhyWeAreDifferent";
 import GetStarted from "./components/GetStarted";
+import ToggleAnywhere from "./components/ToggleAnywhere";
 
 export default function Home() {
   const containerRef = useRef(null);
@@ -59,6 +60,7 @@ export default function Home() {
       </div>
       <HowItWorks />
       <WhyWeAreDifferent />
+      <ToggleAnywhere />
       <Features />
       <GetStarted />
       <FAQ />

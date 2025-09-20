@@ -44,7 +44,7 @@ export default function FAQ() {
   return (
     <section
       id="faq"
-      className="relative bg-base-200 py-12 px-4 sm:px-6 lg:px-12 flex items-center justify-center"
+      className="relative bg-base-100 py-12 px-4 sm:px-6 lg:px-12 flex items-center justify-center"
     >
       <div className="w-full max-w-4xl mx-auto">
         <div className="text-center mb-12">

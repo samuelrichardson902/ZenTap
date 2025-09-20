@@ -35,7 +35,7 @@ export default function GetStarted() {
   ];
 
   return (
-    <section id="getStarted" className="bg-base-100 py-24 px-4 scroll-mt-20">
+    <section id="getStarted" className="bg-base-200 py-24 px-4 scroll-mt-20">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-bold mb-4 headerShadow">
