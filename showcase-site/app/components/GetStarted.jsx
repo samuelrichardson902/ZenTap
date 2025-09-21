@@ -11,7 +11,7 @@ export default function GetStarted() {
       description:
         "Get the app on google play for free and help us to improve. Your feedback is invaluable.",
       cta: "Sign Up as a Tester on",
-      link: "https://play.google.com/apps/internaltest/4700210753530599830",
+      link: "/tester-signup",
       isExternal: true,
     },
     {
@@ -53,14 +53,20 @@ export default function GetStarted() {
               <p className="text-base-content/70 mb-6 flex-grow">
                 {option.description}
               </p>
-              <Link
-                href={option.link}
-                className="btn btn-primary"
-                target={option.isExternal ? "_blank" : "_self"}
-                rel={option.isExternal ? "noopener noreferrer" : ""}
-              >
-                {option.cta}
-              </Link>
+              {option.isExternal ? (
+                <a
+                  href={option.link}
+                  className="btn btn-primary"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {option.cta}
+                </a>
+              ) : (
+                <Link href={option.link} className="btn btn-primary">
+                  {option.cta}
+                </Link>
+              )}
             </div>
           ))}
         </div>
