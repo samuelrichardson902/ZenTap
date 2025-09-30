@@ -10,7 +10,7 @@ export default function GetStarted() {
       title: "Become a Tester",
       description:
         "Get the app on google play for free and help us to improve. Your feedback is invaluable.",
-      cta: "Sign Up as a Tester on",
+      cta: "Sign Up as a Tester",
       link: "/tester-signup",
       isExternal: true,
     },
